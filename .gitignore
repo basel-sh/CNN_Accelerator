@@ -35,3 +35,6 @@ venv/
 Thumbs.db
 .vscode/*
 !.vscode/settings.json
+
+# --- Icarus Verilog local sim artifacts (Phase 9 quick-iteration flow) ---
+sim/

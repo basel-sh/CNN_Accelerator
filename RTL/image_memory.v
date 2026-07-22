@@ -1,24 +1,31 @@
 //==============================================================================
-// File          : image_memory.v
-// Module        : image_memory
-// Project       : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
-// Phase         : 3 - Memory Architecture (see Documentation/DevelopmentRoadmap.md)
-//------------------------------------------------------------------------------
-// Responsibility:
-//   Storage for the input grayscale image / feature map (>=32x32, unsigned fixed-point). Supplies pixel data to the line buffer / window generator in raster-scan order under control of the FSM.
-//
-// Interacts with : top.v, controller.v, line_buffer.v, ram.v
-//
-// Status         : STUB ONLY - no logic implemented yet.
-//                   Ports, parameters and internal logic are intentionally
-//                   left as TODO until the RTL implementation phase begins.
+// File   : image_memory.v  |  Module: image_memory  |  Phase 3 - Memory Arch.
+// Stores the unsigned input image (default 32x32, PIXEL_W-bit). Preloaded via
+// the write port (host/testbench); read by controller.v in raster-scan order.
 //==============================================================================
-
-module image_memory (
-    // TODO: define parameter list (e.g. DATA_WIDTH, KERNEL_SIZE, ...)
-    // TODO: define port list (clk, rst_n, data in/out, valid/ready handshake...)
+module image_memory #(
+    parameter PIXEL_W = 8,
+    parameter IMG_W   = 32,
+    parameter IMG_H   = 32,
+    parameter ADDRW   = 10          // ceil(log2(IMG_W*IMG_H))
+)(
+    input  wire                 clk,
+    input  wire                 we,
+    input  wire [ADDRW-1:0]     waddr,
+    input  wire [PIXEL_W-1:0]   wdata,
+    input  wire [ADDRW-1:0]     raddr,
+    output wire [PIXEL_W-1:0]   rdata
 );
-
-    // TODO: implementation pending - do not implement before Phase 3 - Memory Architecture
-
+    ram #(
+        .WIDTH(PIXEL_W),
+        .DEPTH(IMG_W*IMG_H),
+        .ADDRW(ADDRW)
+    ) u_ram (
+        .clk   (clk),
+        .we    (we),
+        .waddr (waddr),
+        .wdata (wdata),
+        .raddr (raddr),
+        .rdata (rdata)
+    );
 endmodule

@@ -1,24 +1,31 @@
 //==============================================================================
-// File          : ram.v
-// Module        : ram
-// Project       : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
-// Phase         : 3 - Memory Architecture (see Documentation/DevelopmentRoadmap.md)
-//------------------------------------------------------------------------------
-// Responsibility:
-//   Generic parameterizable synchronous RAM primitive (single or dual-port) used as the underlying storage element for image_memory.v, kernel_memory.v and line_buffer.v. Kept generic so it can map cleanly to Xilinx Block RAM during synthesis.
+// File     : ram.v   |  Module: ram   |  Phase 3 - Memory Architecture
+// Generic parameterizable synchronous single-port-style RAM (separate write
+// and read address so it infers cleanly onto Xilinx Block RAM / distributed
+// RAM). Read has 1-cycle latency (registered), matching BRAM behavior.
 //
-// Interacts with : image_memory.v, kernel_memory.v, line_buffer.v
-//
-// Status         : STUB ONLY - no logic implemented yet.
-//                   Ports, parameters and internal logic are intentionally
-//                   left as TODO until the RTL implementation phase begins.
+// NOTE: when waddr == raddr on the same we=1 cycle, rdata returns the OLD
+// value (read-before-write), because both assignments below are nonblocking
+// and evaluate against the pre-cycle memory contents. RTL/line_buffer.v
+// deliberately relies on this to implement a fixed-depth row-delay line.
 //==============================================================================
-
-module ram (
-    // TODO: define parameter list (e.g. DATA_WIDTH, KERNEL_SIZE, ...)
-    // TODO: define port list (clk, rst_n, data in/out, valid/ready handshake...)
+module ram #(
+    parameter WIDTH = 8,
+    parameter DEPTH = 1024,
+    parameter ADDRW = 10
+)(
+    input  wire                  clk,
+    input  wire                  we,
+    input  wire [ADDRW-1:0]      waddr,
+    input  wire [WIDTH-1:0]      wdata,
+    input  wire [ADDRW-1:0]      raddr,
+    output reg  [WIDTH-1:0]      rdata
 );
+    reg [WIDTH-1:0] mem [0:DEPTH-1];
 
-    // TODO: implementation pending - do not implement before Phase 3 - Memory Architecture
-
+    always @(posedge clk) begin
+        if (we)
+            mem[waddr] <= wdata;
+        rdata <= mem[raddr];
+    end
 endmodule
