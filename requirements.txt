@@ -1,0 +1,11 @@
+# Python environment - CNN Convolution Accelerator (IEEE SSCS Egypt Chapter 2026)
+#
+# numpy          : core array math for the golden model / convolution reference
+# opencv-python  : image I/O + grayscale conversion (Python/image_loader.py)
+# matplotlib     : visualizing images, kernels, and convolution results
+# pytest         : automated test harness for Python/verify.py and unit tests
+
+numpy==1.26.4
+opencv-python==4.9.0.80
+matplotlib==3.8.4
+pytest==8.1.1
