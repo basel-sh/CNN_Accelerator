@@ -27,7 +27,7 @@ PIXEL_W, KERNEL_W, ACC_W = 8, 8, 20
 img = generate_test_image(32, 32, "random", seed=42, pixel_width=PIXEL_W)
 ker = generate_test_kernel(3, "edge", kernel_width=KERNEL_W)
 out = run_golden_model(img, ker, apply_relu=False, pixel_width=PIXEL_W, kernel_width=KERNEL_W, acc_width=ACC_W)
-write_mem_file(img, "Images/input_image.mem", PIXEL_W, signed=False)
+write_mem_file(img, "Images/input_32x32.mem", PIXEL_W, signed=False)
 write_mem_file(ker, "Images/kernels/edge_3x3.mem", KERNEL_W, signed=True)
 write_mem_file(out, "Images/expected_output.mem", ACC_W, signed=True)
 PYEOF
@@ -42,7 +42,7 @@ echo "== [3/4] Running simulation =="
 vvp sim/tb_top.out
 
 echo "== [4/4] Comparing RTL output to the golden model =="
-python3 Python/verify.py --image Images/input_image.mem \
+python3 Python/verify.py --image Images/input_32x32.mem \
   --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem \
   --img-size 32 32 --k 3 --acc-width 20
 

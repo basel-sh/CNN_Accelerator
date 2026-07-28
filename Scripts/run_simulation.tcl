@@ -81,4 +81,4 @@ close_sim
 cd $repo_root
 
 puts "run_simulation.tcl: simulation complete. Waveform config saved to $wcfg_path"
-puts "Next: python3 Python/verify.py --image Images/input_image.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20"
+puts "Next: python3 Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20"

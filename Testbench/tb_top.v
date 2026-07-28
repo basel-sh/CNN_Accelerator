@@ -1,7 +1,7 @@
 //==============================================================================
 // tb_top.v - Phase 9 system-level testbench for RTL/top.v
 //
-// 1. Preloads image_memory from Images/input_image.mem ($readmemh, unsigned)
+// 1. Preloads image_memory from Images/input_32x32.mem ($readmemh, unsigned)
 // 2. Preloads kernel_memory from Images/kernels/edge_3x3.mem ($readmemh, signed
 //    two's-complement hex)
 // 3. Asserts start, streams the whole 32x32 image through the pipeline
@@ -56,7 +56,7 @@ module tb_top;
         $dumpfile("sim/tb_top.vcd");
         $dumpvars(0, tb_top);
 
-        $readmemh("Images/input_image.mem", image_stim);
+        $readmemh("Images/input_32x32.mem", image_stim);
         $readmemh("Images/kernels/edge_3x3.mem", kernel_stim);
 
         out_file = $fopen("sim/rtl_output.mem", "w");

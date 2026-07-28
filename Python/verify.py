@@ -10,7 +10,7 @@ complement, written by Testbench/tb_top.v).
 
 Usage:
     python Python/verify.py \\
-        --image Images/input_image.mem \\
+        --image Images/input_32x32.mem \\
         --kernel Images/kernels/edge_3x3.mem \\
         --rtl-output sim/rtl_output.mem \\
         --img-size 32 32 --k 3 \\
