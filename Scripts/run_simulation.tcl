@@ -54,7 +54,13 @@ set_property top tb_top [get_filesets sim_1]
 set sim_run_dir [file join [file normalize $proj_dir] "$proj_name.sim" "sim_1" "behav" "xsim"]
 file mkdir $sim_run_dir
 puts "run_simulation.tcl: pre-staging Images/ and sim/ into $sim_run_dir"
-catch {file copy -force -- [file join $repo_root "Images"] $sim_run_dir}
+# NOTE - Tcl's [file copy] does NOT merge into an existing destination
+# directory; if $sim_run_dir/Images already exists (true on every re-run
+# after the first), it nests the copy inside it instead
+# ($sim_run_dir/Images/Images/...) and stale files are left in place. Wipe
+# the destination first so every run is a clean, exact mirror of Images/.
+catch {file delete -force [file join $sim_run_dir "Images"]}
+file copy -force -- [file join $repo_root "Images"] $sim_run_dir
 file mkdir [file join $sim_run_dir "sim"]
 
 # A simulation may already be running from a previous GUI click - close it
