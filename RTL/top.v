@@ -1,142 +1,142 @@
 //==============================================================================
-// File   : top.v  |  Module: top  |  Phase 8 - Top Integration
+// top.v | Module: top | Phase 8 - Top Integration
 // Wires image_memory, kernel_memory, controller, line_buffer,
-// window_generator, mac and output_buffer into the complete NxN convolution
+// window_generator, mac, and output_buffer into the complete NxN convolution
 // accelerator. Also performs the small pipeline-alignment shifting (the
 // image-memory read register, the window-generator register, and the MAC
 // register each add one cycle) needed to keep the "valid window" tag in
 // lockstep with the data as it flows through the datapath.
 //==============================================================================
 module top #(
-    parameter PIXEL_W  = 8,
-    parameter KERNEL_W = 8,
-    parameter ACC_W    = 20,
-    parameter IMG_W    = 32,
-    parameter IMG_H    = 32,
+    parameter Pixel_W  = 8,
+    parameter Kernel_W = 8,
+    parameter Acc_W    = 20,
+    parameter Img_W    = 32,
+    parameter Img_H    = 32,
     parameter K        = 3,
-    parameter IMG_ADDRW = 10,        // ceil(log2(IMG_W*IMG_H))
-    parameter KIDXW     = 4,         // ceil(log2(K*K))
-    parameter OUT_DEPTH  = 1024,
-    parameter OUT_AW     = 10
+    parameter Img_Addrw = 10,        // ceil(log2(Img_W*Img_H))
+    parameter Kidxw      = 4,        // ceil(log2(K*K))
+    parameter Out_Depth  = 1024,
+    parameter Out_Aw     = 10
 )(
-    input  wire                        clk,
-    input  wire                        rst_n,
+    input  wire                        Clk,
+    input  wire                        Rst_N,
 
     // control
-    input  wire                        start,
-    input  wire                        relu_en,
-    output wire                        busy,
-    output wire                        scan_done,
+    input  wire                        Start,
+    input  wire                        Relu_En,
+    output wire                        Busy,
+    output wire                        Scan_Done,
 
     // image load interface (host/testbench preloads image_memory)
-    input  wire                        img_we,
-    input  wire [IMG_ADDRW-1:0]        img_waddr,
-    input  wire [PIXEL_W-1:0]          img_wdata,
+    input  wire                        Img_We,
+    input  wire [Img_Addrw-1:0]        Img_Waddr,
+    input  wire [Pixel_W-1:0]          Img_Wdata,
 
     // kernel load interface (host/testbench preloads kernel_memory)
-    input  wire                        kernel_we,
-    input  wire [KIDXW-1:0]            kernel_windex,
-    input  wire signed [KERNEL_W-1:0]  kernel_wdata,
+    input  wire                        Kernel_We,
+    input  wire [Kidxw-1:0]            Kernel_Windex,
+    input  wire signed [Kernel_W-1:0]  Kernel_Wdata,
 
     // result stream out
-    input  wire                        out_rd_en,
-    output wire signed [ACC_W-1:0]     out_data,
-    output wire                        out_valid,
-    output wire                        out_full
+    input  wire                        Out_Rd_En,
+    output wire signed [Acc_W-1:0]     Out_Data,
+    output wire                        Out_Valid,
+    output wire                        Out_Full
 );
 
     // ---------------- controller ----------------
-    wire [IMG_ADDRW-1:0] mem_raddr;
-    wire                 streaming;
-    wire                 raw_valid;
+    wire [Img_Addrw-1:0] Mem_Raddr;
+    wire                 Streaming;
+    wire                 Raw_Valid;
 
     controller #(
-        .IMG_W(IMG_W), .IMG_H(IMG_H), .K(K), .ADDRW(IMG_ADDRW)
-    ) u_ctrl (
-        .clk(clk), .rst_n(rst_n), .start(start),
-        .mem_raddr(mem_raddr), .streaming(streaming), .raw_valid(raw_valid),
-        .busy(busy), .scan_done(scan_done)
+        .Img_W(Img_W), .Img_H(Img_H), .K(K), .Addrw(Img_Addrw)
+    ) U_Ctrl (
+        .Clk(Clk), .Rst_N(Rst_N), .Start(Start),
+        .Mem_Raddr(Mem_Raddr), .Streaming(Streaming), .Raw_Valid(Raw_Valid),
+        .Busy(Busy), .Scan_Done(Scan_Done)
     );
 
     // ---------------- image memory ----------------
-    wire [PIXEL_W-1:0] pixel_in;
+    wire [Pixel_W-1:0] Pixel_In;
     image_memory #(
-        .PIXEL_W(PIXEL_W), .IMG_W(IMG_W), .IMG_H(IMG_H), .ADDRW(IMG_ADDRW)
-    ) u_img_mem (
-        .clk(clk), .we(img_we), .waddr(img_waddr), .wdata(img_wdata),
-        .raddr(mem_raddr), .rdata(pixel_in)
+        .Pixel_W(Pixel_W), .Img_W(Img_W), .Img_H(Img_H), .Addrw(Img_Addrw)
+    ) U_Img_Mem (
+        .Clk(Clk), .We(Img_We), .Waddr(Img_Waddr), .Wdata(Img_Wdata),
+        .Raddr(Mem_Raddr), .Rdata(Pixel_In)
     );
 
     // ---------------- kernel memory ----------------
-    wire signed [K*K*KERNEL_W-1:0] kernel_flat;
+    wire signed [K*K*Kernel_W-1:0] Kernel_Flat;
     kernel_memory #(
-        .K(K), .KERNEL_W(KERNEL_W), .IDXW(KIDXW)
-    ) u_kernel_mem (
-        .clk(clk), .rst_n(rst_n), .we(kernel_we),
-        .windex(kernel_windex), .wdata(kernel_wdata),
-        .kernel_flat(kernel_flat)
+        .K(K), .Kernel_W(Kernel_W), .Idxw(Kidxw)
+    ) U_Kernel_Mem (
+        .Clk(Clk), .Rst_N(Rst_N), .We(Kernel_We),
+        .Windex(Kernel_Windex), .Wdata(Kernel_Wdata),
+        .Kernel_Flat(Kernel_Flat)
     );
 
     // ---------------- pipeline-alignment stage 1: pixel becomes valid ----------------
-    reg shift_en_d1;
-    reg valid_tag_d1;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            shift_en_d1  <= 1'b0;
-            valid_tag_d1 <= 1'b0;
+    reg Shift_En_D1;
+    reg Valid_Tag_D1;
+    always @(posedge Clk or negedge Rst_N) begin
+        if (!Rst_N) begin
+            Shift_En_D1  <= 1'b0;
+            Valid_Tag_D1 <= 1'b0;
         end else begin
-            shift_en_d1  <= streaming;
-            valid_tag_d1 <= raw_valid;
+            Shift_En_D1  <= Streaming;
+            Valid_Tag_D1 <= Raw_Valid;
         end
     end
 
     // ---------------- line buffer ----------------
-    wire [K*PIXEL_W-1:0] row_taps_flat;
+    wire [K*Pixel_W-1:0] Row_Taps_Flat;
     line_buffer #(
-        .PIXEL_W(PIXEL_W), .IMG_W(IMG_W), .K(K)
-    ) u_line_buf (
-        .clk(clk), .rst_n(rst_n),
-        .shift_en(shift_en_d1), .pixel_in(pixel_in),
-        .row_taps_flat(row_taps_flat)
+        .Pixel_W(Pixel_W), .Img_W(Img_W), .K(K)
+    ) U_Line_Buf (
+        .Clk(Clk), .Rst_N(Rst_N),
+        .Shift_En(Shift_En_D1), .Pixel_In(Pixel_In),
+        .Row_Taps_Flat(Row_Taps_Flat)
     );
 
     // ---------------- window generator ----------------
-    wire [K*K*PIXEL_W-1:0] window_flat;
+    wire [K*K*Pixel_W-1:0] Window_Flat;
     window_generator #(
-        .PIXEL_W(PIXEL_W), .K(K)
-    ) u_win_gen (
-        .clk(clk), .rst_n(rst_n),
-        .shift_en(shift_en_d1), .row_taps_flat(row_taps_flat),
-        .window_flat(window_flat)
+        .Pixel_W(Pixel_W), .K(K)
+    ) U_Win_Gen (
+        .Clk(Clk), .Rst_N(Rst_N),
+        .Shift_En(Shift_En_D1), .Row_Taps_Flat(Row_Taps_Flat),
+        .Window_Flat(Window_Flat)
     );
 
     // ---------------- pipeline-alignment stage 2: window becomes valid ----------------
-    reg valid_tag_d2;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            valid_tag_d2 <= 1'b0;
+    reg Valid_Tag_D2;
+    always @(posedge Clk or negedge Rst_N) begin
+        if (!Rst_N)
+            Valid_Tag_D2 <= 1'b0;
         else
-            valid_tag_d2 <= valid_tag_d1;
+            Valid_Tag_D2 <= Valid_Tag_D1;
     end
 
     // ---------------- MAC ----------------
-    wire mac_valid_out;
-    wire signed [ACC_W-1:0] mac_acc_out;
+    wire Mac_Valid_Out;
+    wire signed [Acc_W-1:0] Mac_Acc_Out;
     mac #(
-        .PIXEL_W(PIXEL_W), .KERNEL_W(KERNEL_W), .ACC_W(ACC_W), .K(K)
-    ) u_mac (
-        .clk(clk), .rst_n(rst_n),
-        .valid_in(valid_tag_d2), .window_flat(window_flat), .kernel_flat(kernel_flat),
-        .valid_out(mac_valid_out), .acc_out(mac_acc_out)
+        .Pixel_W(Pixel_W), .Kernel_W(Kernel_W), .Acc_W(Acc_W), .K(K)
+    ) U_Mac (
+        .Clk(Clk), .Rst_N(Rst_N),
+        .Valid_In(Valid_Tag_D2), .Window_Flat(Window_Flat), .Kernel_Flat(Kernel_Flat),
+        .Valid_Out(Mac_Valid_Out), .Acc_Out(Mac_Acc_Out)
     );
 
     // ---------------- output buffer ----------------
     output_buffer #(
-        .ACC_W(ACC_W), .DEPTH(OUT_DEPTH), .AW(OUT_AW)
-    ) u_out_buf (
-        .clk(clk), .rst_n(rst_n), .relu_en(relu_en),
-        .valid_in(mac_valid_out), .data_in(mac_acc_out),
-        .rd_en(out_rd_en), .data_out(out_data), .out_valid(out_valid), .full(out_full)
+        .Acc_W(Acc_W), .Depth(Out_Depth), .Aw(Out_Aw)
+    ) U_Out_Buf (
+        .Clk(Clk), .Rst_N(Rst_N), .Relu_En(Relu_En),
+        .Valid_In(Mac_Valid_Out), .Data_In(Mac_Acc_Out),
+        .Rd_En(Out_Rd_En), .Data_Out(Out_Data), .Out_Valid(Out_Valid), .Full(Out_Full)
     );
 
 endmodule

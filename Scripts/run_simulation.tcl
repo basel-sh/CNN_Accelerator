@@ -70,9 +70,9 @@ launch_simulation
 
 # Default waveform view: top-level control/status signals plus every DUT
 # port, so the window is immediately useful instead of a blank canvas.
-add_wave -radix hex {/tb_top/clk /tb_top/rst_n /tb_top/start /tb_top/busy \
-    /tb_top/scan_done /tb_top/out_valid /tb_top/out_rd_en /tb_top/out_data}
-add_wave /tb_top/dut/*
+add_wave -radix hex {/tb_top/Clk /tb_top/Rst_N /tb_top/Start /tb_top/Busy \
+    /tb_top/Scan_Done /tb_top/Out_Valid /tb_top/Out_Rd_En /tb_top/Out_Data}
+add_wave /tb_top/Dut/*
 
 run all
 

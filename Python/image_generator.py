@@ -1,61 +1,59 @@
 """
-File     : image_generator.py
-Project  : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
-Phase    : 2 - Python Golden Model
+File    : image_generator.py
+Project : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
 
 Synthetic test-pattern / kernel generators used to stress the RTL beyond a
 single natural image (all-zero, all-max, checkerboard, random seeded images,
-and standard edge/blur/identity/sharpen kernels).
+plus standard edge/blur/identity/sharpen kernels).
 """
 
 import numpy as np
 
 
-def generate_test_image(width=32, height=32, pattern="random", seed=0, pixel_width=8):
+def generate_test_image(Width=32, Height=32, Pattern="random", Seed=0, Pixel_Width=8):
     """Generate a synthetic unsigned test image."""
-    maxval = (1 << pixel_width) - 1
-    if pattern == "random":
-        rng = np.random.default_rng(seed)
-        return rng.integers(0, maxval + 1, size=(height, width), dtype=np.int64)
-    if pattern == "zeros":
-        return np.zeros((height, width), dtype=np.int64)
-    if pattern == "max":
-        return np.full((height, width), maxval, dtype=np.int64)
-    if pattern == "checkerboard":
-        yy, xx = np.meshgrid(np.arange(height), np.arange(width), indexing="ij")
-        return np.where((xx + yy) % 2 == 0, maxval, 0).astype(np.int64)
-    if pattern == "gradient":
-        row = np.linspace(0, maxval, width, dtype=np.int64)
-        return np.tile(row, (height, 1))
-    raise ValueError(f"Unknown pattern: {pattern}")
+    Maxval = (1 << Pixel_Width) - 1
+    if Pattern == "random":
+        Rng = np.random.default_rng(Seed)
+        return Rng.integers(0, Maxval + 1, size=(Height, Width), dtype=np.int64)
+    if Pattern == "zeros":
+        return np.zeros((Height, Width), dtype=np.int64)
+    if Pattern == "max":
+        return np.full((Height, Width), Maxval, dtype=np.int64)
+    if Pattern == "checkerboard":
+        Yy, Xx = np.meshgrid(np.arange(Height), np.arange(Width), indexing="ij")
+        return np.where((Xx + Yy) % 2 == 0, Maxval, 0).astype(np.int64)
+    if Pattern == "gradient":
+        Row = np.linspace(0, Maxval, Width, dtype=np.int64)
+        return np.tile(Row, (Height, 1))
+    raise ValueError(f"Unknown pattern: {Pattern}")
 
 
-def generate_test_kernel(size=3, kind="edge", kernel_width=8):
+def generate_test_kernel(Size=3, Kind="edge", Kernel_Width=8):
     """Generate a standard signed test kernel of the given size."""
-    if kind == "identity":
-        k = np.zeros((size, size), dtype=np.int64)
-        k[size // 2, size // 2] = 1
-        return k
-    if kind == "edge":
-        if size != 3:
+    if Kind == "identity":
+        K = np.zeros((Size, Size), dtype=np.int64)
+        K[Size // 2, Size // 2] = 1
+        return K
+    if Kind == "edge":
+        if Size != 3:
             raise ValueError("edge kernel is defined for size=3")
         return np.array([[-1, -1, -1],
                           [-1,  8, -1],
                           [-1, -1, -1]], dtype=np.int64)
-    if kind == "sharpen":
-        if size != 3:
+    if Kind == "sharpen":
+        if Size != 3:
             raise ValueError("sharpen kernel is defined for size=3")
         return np.array([[ 0, -1,  0],
                           [-1,  5, -1],
                           [ 0, -1,  0]], dtype=np.int64)
-    if kind == "box_blur":
-        # Note: true box blur uses fractional weights (1/size^2); the kernel
-        # memory only stores integer signed coefficients, so this returns an
-        # unnormalized integer box kernel (all ones) - normalization, if
-        # desired, is a downstream/software concern, not the RTL's.
-        return np.ones((size, size), dtype=np.int64)
-    if kind == "random":
-        lo, hi = -(1 << (kernel_width - 1)), (1 << (kernel_width - 1)) - 1
-        rng = np.random.default_rng(1)
-        return rng.integers(lo, hi + 1, size=(size, size), dtype=np.int64)
-    raise ValueError(f"Unknown kernel kind: {kind}")
+    if Kind == "box_blur":
+        # True box blur needs fractional weights (1/size^2); kernel memory
+        # only stores integer signed coefficients, so this is unnormalized
+        # (all ones) - normalization is a downstream/software concern.
+        return np.ones((Size, Size), dtype=np.int64)
+    if Kind == "random":
+        Lo, Hi = -(1 << (Kernel_Width - 1)), (1 << (Kernel_Width - 1)) - 1
+        Rng = np.random.default_rng(1)
+        return Rng.integers(Lo, Hi + 1, size=(Size, Size), dtype=np.int64)
+    raise ValueError(f"Unknown kernel kind: {Kind}")

@@ -1,7 +1,5 @@
 # Reports/utilization/
 
-Destination for Vivado-generated utilization reports (exported per
-Documentation/DevelopmentRoadmap.md Phases 11-13, via Scripts/synthesize.tcl
-and the manual export steps in README.md's "Reports" section).
-Empty until synthesis/implementation is run - this folder is reserved so the
-report archive structure is fixed from day one.
+Destination for Vivado-generated LUT/FF/DSP/BRAM utilization reports,
+exported via `Scripts/synthesize.tcl` (Phase 11) — see root `README.md`
+§8. Empty until synthesis is run on your machine.

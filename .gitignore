@@ -1,5 +1,7 @@
 # --- Vivado generated/build artifacts ---
-Vivado/Project.xpr
+# Vivado/CNN_Accelerator.xpr IS tracked on purpose - open it directly on a
+# new machine instead of re-running Scripts/build.tcl. Only the bulky,
+# machine-specific, regenerable folders below are ignored.
 Vivado/*.cache/
 Vivado/*.hw/
 Vivado/*.ip_user_files/
@@ -38,3 +40,6 @@ Thumbs.db
 
 # --- Icarus Verilog local sim artifacts (Phase 9 quick-iteration flow) ---
 sim/
+
+# --- Stray Vivado run-report artifact ---
+dfx_runtime.txt

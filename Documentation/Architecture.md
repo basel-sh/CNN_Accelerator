@@ -1,7 +1,8 @@
 # Architecture — CNN Convolution Accelerator
 
-Status: design description only. No RTL logic exists yet — this document is
-the reference implementers (you, later) will code against.
+Status: **implemented and verified** (Phases 1-9). This document describes
+the RTL exactly as built in `RTL/`; signal names follow the `First_Second`
+naming convention (see root `README.md` §6).
 
 ## 1. High-Level Architecture
 
@@ -68,13 +69,12 @@ the reference implementers (you, later) will code against.
 
 ## 5. FSM Overview (`controller.v`)
 
-Conceptual states (finalized during Phase 7):
-
-`IDLE → LOAD_KERNEL → STREAM_ROWS → WINDOW_VALID → (RELU) → OUTPUT_VALID → DONE / STREAM_ROWS (loop)`
-
-The FSM gates when the line buffer shifts, when the window generator's output
-is valid, when the MAC array should accumulate vs. flush, and when ReLU is
-applied before handing data to the output buffer.
+Implemented states: `S_Idle → S_Run → S_Done → S_Idle`. `S_Run` drives the
+raster-scan read address (`Mem_Raddr`) and raises `Raw_Valid` once
+`Row >= K-1 && Col >= K-1`, i.e. once a full KxK window exists under the
+current pixel. `top.v` re-times `Raw_Valid` by two extra cycles
+(`Valid_Tag_D1`/`Valid_Tag_D2`) to match the image-memory read latency and
+the window-generator register before it reaches `mac.v`.
 
 ## 6. Line Buffer Concept
 

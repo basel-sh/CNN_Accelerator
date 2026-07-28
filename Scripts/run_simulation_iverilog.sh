@@ -23,13 +23,13 @@ from image_generator import generate_test_image, generate_test_kernel
 from golden_model import run_golden_model
 from image_loader import write_mem_file
 
-PIXEL_W, KERNEL_W, ACC_W = 8, 8, 20
-img = generate_test_image(32, 32, "random", seed=42, pixel_width=PIXEL_W)
-ker = generate_test_kernel(3, "edge", kernel_width=KERNEL_W)
-out = run_golden_model(img, ker, apply_relu=False, pixel_width=PIXEL_W, kernel_width=KERNEL_W, acc_width=ACC_W)
-write_mem_file(img, "Images/input_32x32.mem", PIXEL_W, signed=False)
-write_mem_file(ker, "Images/kernels/edge_3x3.mem", KERNEL_W, signed=True)
-write_mem_file(out, "Images/expected_output.mem", ACC_W, signed=True)
+Pixel_W, Kernel_W, Acc_W = 8, 8, 20
+Img = generate_test_image(32, 32, "random", Seed=42, Pixel_Width=Pixel_W)
+Ker = generate_test_kernel(3, "edge", Kernel_Width=Kernel_W)
+Out = run_golden_model(Img, Ker, Apply_Relu=False, Pixel_Width=Pixel_W, Kernel_Width=Kernel_W, Acc_Width=Acc_W)
+write_mem_file(Img, "Images/input_32x32.mem", Pixel_W, Signed=False)
+write_mem_file(Ker, "Images/kernels/edge_3x3.mem", Kernel_W, Signed=True)
+write_mem_file(Out, "Images/expected_output.mem", Acc_W, Signed=True)
 PYEOF
 
 echo "== [2/4] Compiling RTL + testbench with Icarus Verilog =="

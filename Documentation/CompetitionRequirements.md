@@ -1,5 +1,17 @@
 # Competition Requirements — IEEE SSCS Egypt Chapter 2026 Student Design Competition
 
+Source: `2026 SSCS_Egypt Competition Announcement.pdf` (repo root).
+Registration deadline **July 25, 2026**. Report due **September 15, 2026**;
+winners announced **September 30, 2026**. Awards: Gold $350, Silver $250,
+Bronze $150. A live status table is also in the root `README.md` §9.
+
+Figure of Merit (report this once Phase 11-13 synthesis numbers exist):
+
+```
+FoM = Throughput / (Power x (LUTs + 50*DSPs + 100*BRAMs))
+```
+where Throughput is in output pixels/cycle. Higher is better.
+
 ## Functional Requirements
 
 | # | Requirement | Notes for this project |

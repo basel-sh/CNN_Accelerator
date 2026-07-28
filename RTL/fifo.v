@@ -1,41 +1,40 @@
 //==============================================================================
-// File     : fifo.v   |  Module: fifo   |  Phase 3 - Memory Architecture
-// Generic parameterizable synchronous FIFO (independent write/read pointers,
-// full/empty flags). Used by RTL/output_buffer.v to decouple MAC production
-// timing from result consumption timing.
+// fifo.v | Module: fifo | Phase 3 - Memory Architecture
+// Generic synchronous FIFO (independent write/read pointers, full/empty
+// flags). Used by RTL/output_buffer.v to decouple MAC timing from output.
 //==============================================================================
 module fifo #(
-    parameter WIDTH = 20,
-    parameter DEPTH = 64,
-    parameter AW    = 6      // ceil(log2(DEPTH))
+    parameter Width = 20,
+    parameter Depth = 64,
+    parameter Aw    = 6      // ceil(log2(Depth))
 )(
-    input  wire              clk,
-    input  wire              rst_n,
-    input  wire              wr_en,
-    input  wire [WIDTH-1:0]  wr_data,
-    input  wire              rd_en,
-    output wire [WIDTH-1:0]  rd_data,
-    output wire              full,
-    output wire              empty
+    input  wire              Clk,
+    input  wire              Rst_N,
+    input  wire              Wr_En,
+    input  wire [Width-1:0]  Wr_Data,
+    input  wire              Rd_En,
+    output wire [Width-1:0]  Rd_Data,
+    output wire              Full,
+    output wire              Empty
 );
-    reg [WIDTH-1:0] mem [0:DEPTH-1];
-    reg [AW:0] wptr, rptr;   // one extra MSB to disambiguate full vs empty
+    reg [Width-1:0] Mem [0:Depth-1];
+    reg [Aw:0] Wptr, Rptr;   // one extra MSB disambiguates full vs empty
 
-    assign rd_data = mem[rptr[AW-1:0]];
-    assign empty   = (wptr == rptr);
-    assign full    = (wptr[AW-1:0] == rptr[AW-1:0]) && (wptr[AW] != rptr[AW]);
+    assign Rd_Data = Mem[Rptr[Aw-1:0]];
+    assign Empty   = (Wptr == Rptr);
+    assign Full    = (Wptr[Aw-1:0] == Rptr[Aw-1:0]) && (Wptr[Aw] != Rptr[Aw]);
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            wptr <= {(AW+1){1'b0}};
-            rptr <= {(AW+1){1'b0}};
+    always @(posedge Clk or negedge Rst_N) begin
+        if (!Rst_N) begin
+            Wptr <= {(Aw+1){1'b0}};
+            Rptr <= {(Aw+1){1'b0}};
         end else begin
-            if (wr_en && !full) begin
-                mem[wptr[AW-1:0]] <= wr_data;
-                wptr <= wptr + 1'b1;
+            if (Wr_En && !Full) begin
+                Mem[Wptr[Aw-1:0]] <= Wr_Data;
+                Wptr <= Wptr + 1'b1;
             end
-            if (rd_en && !empty)
-                rptr <= rptr + 1'b1;
+            if (Rd_En && !Empty)
+                Rptr <= Rptr + 1'b1;
         end
     end
 endmodule

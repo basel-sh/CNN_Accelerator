@@ -1,7 +1,6 @@
 """
-File     : image_loader.py
-Project  : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
-Phase    : 2 - Python Golden Model
+File    : image_loader.py
+Project : CNN Convolution Accelerator - IEEE SSCS Egypt Chapter 2026
 
 Loads/quantizes images with OpenCV and exports/imports Verilog
 $readmemh-compatible hex memory files, so Python and RTL simulation consume
@@ -15,48 +14,48 @@ import cv2
 from utilities import quantize_unsigned, quantize_signed, to_twos_complement_hex, from_twos_complement
 
 
-def load_image(path, size=None, pixel_width=8):
-    """Load an image file, convert to grayscale, optionally resize, quantize."""
-    img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    if img is None:
-        raise FileNotFoundError(f"Could not read image: {path}")
-    if size is not None:
-        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
-    return quantize_unsigned(img.astype(np.int64), pixel_width)
+def load_image(Path, Size=None, Pixel_Width=8):
+    """Load an image, convert to grayscale, optionally resize, quantize."""
+    Img = cv2.imread(Path, cv2.IMREAD_GRAYSCALE)
+    if Img is None:
+        raise FileNotFoundError(f"Could not read image: {Path}")
+    if Size is not None:
+        Img = cv2.resize(Img, Size, interpolation=cv2.INTER_AREA)
+    return quantize_unsigned(Img.astype(np.int64), Pixel_Width)
 
 
-def save_image(array, path):
+def save_image(Array, Path):
     """Save a 2D array as a PNG (values clipped to [0,255])."""
-    arr = np.clip(np.asarray(array), 0, 255).astype(np.uint8)
-    cv2.imwrite(path, arr)
+    Arr = np.clip(np.asarray(Array), 0, 255).astype(np.uint8)
+    cv2.imwrite(Path, Arr)
 
 
-def write_mem_file(array, out_path, width, signed=False):
+def write_mem_file(Array, Out_Path, Width, Signed=False):
     """Write a 2D array to a $readmemh-compatible hex file, one value per
-    line, in row-major (raster) order — the order RTL/image_memory.v and
+    line, in row-major (raster) order - the order RTL/image_memory.v and
     RTL/kernel_memory.v are addressed in."""
-    flat = np.asarray(array).flatten()
-    with open(out_path, "w") as f:
-        for v in flat:
-            if signed:
-                v = int(quantize_signed(np.array([v]), width)[0])
-                f.write(to_twos_complement_hex(v, width) + "\n")
+    Flat = np.asarray(Array).flatten()
+    with open(Out_Path, "w") as F:
+        for V in Flat:
+            if Signed:
+                V = int(quantize_signed(np.array([V]), Width)[0])
+                F.write(to_twos_complement_hex(V, Width) + "\n")
             else:
-                v = int(quantize_unsigned(np.array([v]), width)[0])
-                f.write(format(v, "0{}x".format((width + 3) // 4)) + "\n")
+                V = int(quantize_unsigned(np.array([V]), Width)[0])
+                F.write(format(V, "0{}x".format((Width + 3) // 4)) + "\n")
 
 
-def read_mem_file(path, shape, width, signed=False):
-    """Read back a $readmemh-style hex file into a 2D array of the given shape."""
-    values = []
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line:
+def read_mem_file(Path, Shape, Width, Signed=False):
+    """Read a $readmemh-style hex file back into a 2D array of Shape."""
+    Values = []
+    with open(Path) as F:
+        for Line in F:
+            Line = Line.strip()
+            if not Line:
                 continue
-            if signed:
-                values.append(from_twos_complement(line, width))
+            if Signed:
+                Values.append(from_twos_complement(Line, Width))
             else:
-                values.append(int(line, 16))
-    arr = np.array(values, dtype=np.int64)
-    return arr.reshape(shape)
+                Values.append(int(Line, 16))
+    Arr = np.array(Values, dtype=np.int64)
+    return Arr.reshape(Shape)

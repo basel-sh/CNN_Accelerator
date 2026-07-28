@@ -20,325 +20,325 @@
       <ValueColumnWidth column_width="167"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="80" />
-   <wvobject fp_name="/tb_top/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <wvobject fp_name="/tb_top/Clk" type="logic">
+      <obj_property name="ElementShortName">Clk</obj_property>
+      <obj_property name="ObjectShortName">Clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/rst_n" type="logic">
-      <obj_property name="ElementShortName">rst_n</obj_property>
-      <obj_property name="ObjectShortName">rst_n</obj_property>
+   <wvobject fp_name="/tb_top/Rst_N" type="logic">
+      <obj_property name="ElementShortName">Rst_N</obj_property>
+      <obj_property name="ObjectShortName">Rst_N</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/start" type="logic">
-      <obj_property name="ElementShortName">start</obj_property>
-      <obj_property name="ObjectShortName">start</obj_property>
+   <wvobject fp_name="/tb_top/Start" type="logic">
+      <obj_property name="ElementShortName">Start</obj_property>
+      <obj_property name="ObjectShortName">Start</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/relu_en" type="logic">
-      <obj_property name="ElementShortName">relu_en</obj_property>
-      <obj_property name="ObjectShortName">relu_en</obj_property>
+   <wvobject fp_name="/tb_top/Relu_En" type="logic">
+      <obj_property name="ElementShortName">Relu_En</obj_property>
+      <obj_property name="ObjectShortName">Relu_En</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/img_we" type="logic">
-      <obj_property name="ElementShortName">img_we</obj_property>
-      <obj_property name="ObjectShortName">img_we</obj_property>
+   <wvobject fp_name="/tb_top/Img_We" type="logic">
+      <obj_property name="ElementShortName">Img_We</obj_property>
+      <obj_property name="ObjectShortName">Img_We</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/img_waddr" type="array">
-      <obj_property name="ElementShortName">img_waddr[9:0]</obj_property>
-      <obj_property name="ObjectShortName">img_waddr[9:0]</obj_property>
+   <wvobject fp_name="/tb_top/Img_Waddr" type="array">
+      <obj_property name="ElementShortName">Img_Waddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Waddr[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/img_wdata" type="array">
-      <obj_property name="ElementShortName">img_wdata[7:0]</obj_property>
-      <obj_property name="ObjectShortName">img_wdata[7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Img_Wdata" type="array">
+      <obj_property name="ElementShortName">Img_Wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Wdata[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/kernel_we" type="logic">
-      <obj_property name="ElementShortName">kernel_we</obj_property>
-      <obj_property name="ObjectShortName">kernel_we</obj_property>
+   <wvobject fp_name="/tb_top/Kernel_We" type="logic">
+      <obj_property name="ElementShortName">Kernel_We</obj_property>
+      <obj_property name="ObjectShortName">Kernel_We</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/kernel_windex" type="array">
-      <obj_property name="ElementShortName">kernel_windex[3:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_windex[3:0]</obj_property>
+   <wvobject fp_name="/tb_top/Kernel_Windex" type="array">
+      <obj_property name="ElementShortName">Kernel_Windex[3:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Windex[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/kernel_wdata" type="array">
-      <obj_property name="ElementShortName">kernel_wdata[7:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_wdata[7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Kernel_Wdata" type="array">
+      <obj_property name="ElementShortName">Kernel_Wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Wdata[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_rd_en" type="logic">
-      <obj_property name="ElementShortName">out_rd_en</obj_property>
-      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   <wvobject fp_name="/tb_top/Out_Rd_En" type="logic">
+      <obj_property name="ElementShortName">Out_Rd_En</obj_property>
+      <obj_property name="ObjectShortName">Out_Rd_En</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_data" type="array">
-      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
-      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+   <wvobject fp_name="/tb_top/Out_Data" type="array">
+      <obj_property name="ElementShortName">Out_Data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Data[19:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_valid" type="logic">
-      <obj_property name="ElementShortName">out_valid</obj_property>
-      <obj_property name="ObjectShortName">out_valid</obj_property>
+   <wvobject fp_name="/tb_top/Out_Valid" type="logic">
+      <obj_property name="ElementShortName">Out_Valid</obj_property>
+      <obj_property name="ObjectShortName">Out_Valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_full" type="logic">
-      <obj_property name="ElementShortName">out_full</obj_property>
-      <obj_property name="ObjectShortName">out_full</obj_property>
+   <wvobject fp_name="/tb_top/Out_Full" type="logic">
+      <obj_property name="ElementShortName">Out_Full</obj_property>
+      <obj_property name="ObjectShortName">Out_Full</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/busy" type="logic">
-      <obj_property name="ElementShortName">busy</obj_property>
-      <obj_property name="ObjectShortName">busy</obj_property>
+   <wvobject fp_name="/tb_top/Busy" type="logic">
+      <obj_property name="ElementShortName">Busy</obj_property>
+      <obj_property name="ObjectShortName">Busy</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/scan_done" type="logic">
-      <obj_property name="ElementShortName">scan_done</obj_property>
-      <obj_property name="ObjectShortName">scan_done</obj_property>
+   <wvobject fp_name="/tb_top/Scan_Done" type="logic">
+      <obj_property name="ElementShortName">Scan_Done</obj_property>
+      <obj_property name="ObjectShortName">Scan_Done</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/image_stim" type="array">
-      <obj_property name="ElementShortName">image_stim[0:1023][7:0]</obj_property>
-      <obj_property name="ObjectShortName">image_stim[0:1023][7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Image_Stim" type="array">
+      <obj_property name="ElementShortName">Image_Stim[0:1023][7:0]</obj_property>
+      <obj_property name="ObjectShortName">Image_Stim[0:1023][7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/kernel_stim" type="array">
-      <obj_property name="ElementShortName">kernel_stim[0:8][7:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_stim[0:8][7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Kernel_Stim" type="array">
+      <obj_property name="ElementShortName">Kernel_Stim[0:8][7:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Stim[0:8][7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/i" type="array">
-      <obj_property name="ElementShortName">i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">i[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/I" type="array">
+      <obj_property name="ElementShortName">I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">I[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_file" type="array">
-      <obj_property name="ElementShortName">out_file[31:0]</obj_property>
-      <obj_property name="ObjectShortName">out_file[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Out_File" type="array">
+      <obj_property name="ElementShortName">Out_File[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_File[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/capture_count" type="array">
-      <obj_property name="ElementShortName">capture_count[31:0]</obj_property>
-      <obj_property name="ObjectShortName">capture_count[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Capture_Count" type="array">
+      <obj_property name="ElementShortName">Capture_Count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Capture_Count[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/PIXEL_W" type="array">
-      <obj_property name="ElementShortName">PIXEL_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">PIXEL_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Pixel_W" type="array">
+      <obj_property name="ElementShortName">Pixel_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Pixel_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/KERNEL_W" type="array">
-      <obj_property name="ElementShortName">KERNEL_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">KERNEL_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Kernel_W" type="array">
+      <obj_property name="ElementShortName">Kernel_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/ACC_W" type="array">
-      <obj_property name="ElementShortName">ACC_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ACC_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Acc_W" type="array">
+      <obj_property name="ElementShortName">Acc_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Acc_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/IMG_W" type="array">
-      <obj_property name="ElementShortName">IMG_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Img_W" type="array">
+      <obj_property name="ElementShortName">Img_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/IMG_H" type="array">
-      <obj_property name="ElementShortName">IMG_H[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_H[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Img_H" type="array">
+      <obj_property name="ElementShortName">Img_H[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_H[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_top/K" type="array">
       <obj_property name="ElementShortName">K[31:0]</obj_property>
       <obj_property name="ObjectShortName">K[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/IMG_ADDRW" type="array">
-      <obj_property name="ElementShortName">IMG_ADDRW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_ADDRW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Img_Addrw" type="array">
+      <obj_property name="ElementShortName">Img_Addrw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Addrw[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/KIDXW" type="array">
-      <obj_property name="ElementShortName">KIDXW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">KIDXW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Kidxw" type="array">
+      <obj_property name="ElementShortName">Kidxw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Kidxw[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/OUT_DEPTH" type="array">
-      <obj_property name="ElementShortName">OUT_DEPTH[31:0]</obj_property>
-      <obj_property name="ObjectShortName">OUT_DEPTH[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Out_Depth" type="array">
+      <obj_property name="ElementShortName">Out_Depth[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Depth[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/OUT_AW" type="array">
-      <obj_property name="ElementShortName">OUT_AW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">OUT_AW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Out_Aw" type="array">
+      <obj_property name="ElementShortName">Out_Aw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Aw[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/TOTAL_PIX" type="array">
-      <obj_property name="ElementShortName">TOTAL_PIX[31:0]</obj_property>
-      <obj_property name="ObjectShortName">TOTAL_PIX[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Total_Pix" type="array">
+      <obj_property name="ElementShortName">Total_Pix[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Total_Pix[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/NUM_K" type="array">
-      <obj_property name="ElementShortName">NUM_K[31:0]</obj_property>
-      <obj_property name="ObjectShortName">NUM_K[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Num_K" type="array">
+      <obj_property name="ElementShortName">Num_K[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Num_K[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/EXPECTED_OUTPUTS" type="array">
-      <obj_property name="ElementShortName">EXPECTED_OUTPUTS[31:0]</obj_property>
-      <obj_property name="ObjectShortName">EXPECTED_OUTPUTS[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Expected_Outputs" type="array">
+      <obj_property name="ElementShortName">Expected_Outputs[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Expected_Outputs[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <wvobject fp_name="/tb_top/Clk" type="logic">
+      <obj_property name="ElementShortName">Clk</obj_property>
+      <obj_property name="ObjectShortName">Clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/rst_n" type="logic">
-      <obj_property name="ElementShortName">rst_n</obj_property>
-      <obj_property name="ObjectShortName">rst_n</obj_property>
+   <wvobject fp_name="/tb_top/Rst_N" type="logic">
+      <obj_property name="ElementShortName">Rst_N</obj_property>
+      <obj_property name="ObjectShortName">Rst_N</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/start" type="logic">
-      <obj_property name="ElementShortName">start</obj_property>
-      <obj_property name="ObjectShortName">start</obj_property>
+   <wvobject fp_name="/tb_top/Start" type="logic">
+      <obj_property name="ElementShortName">Start</obj_property>
+      <obj_property name="ObjectShortName">Start</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/busy" type="logic">
-      <obj_property name="ElementShortName">busy</obj_property>
-      <obj_property name="ObjectShortName">busy</obj_property>
+   <wvobject fp_name="/tb_top/Busy" type="logic">
+      <obj_property name="ElementShortName">Busy</obj_property>
+      <obj_property name="ObjectShortName">Busy</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/scan_done" type="logic">
-      <obj_property name="ElementShortName">scan_done</obj_property>
-      <obj_property name="ObjectShortName">scan_done</obj_property>
+   <wvobject fp_name="/tb_top/Scan_Done" type="logic">
+      <obj_property name="ElementShortName">Scan_Done</obj_property>
+      <obj_property name="ObjectShortName">Scan_Done</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_valid" type="logic">
-      <obj_property name="ElementShortName">out_valid</obj_property>
-      <obj_property name="ObjectShortName">out_valid</obj_property>
+   <wvobject fp_name="/tb_top/Out_Valid" type="logic">
+      <obj_property name="ElementShortName">Out_Valid</obj_property>
+      <obj_property name="ObjectShortName">Out_Valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_rd_en" type="logic">
-      <obj_property name="ElementShortName">out_rd_en</obj_property>
-      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   <wvobject fp_name="/tb_top/Out_Rd_En" type="logic">
+      <obj_property name="ElementShortName">Out_Rd_En</obj_property>
+      <obj_property name="ObjectShortName">Out_Rd_En</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/out_data" type="array">
-      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
-      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+   <wvobject fp_name="/tb_top/Out_Data" type="array">
+      <obj_property name="ElementShortName">Out_Data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Data[19:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Clk" type="logic">
+      <obj_property name="ElementShortName">Clk</obj_property>
+      <obj_property name="ObjectShortName">Clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/rst_n" type="logic">
-      <obj_property name="ElementShortName">rst_n</obj_property>
-      <obj_property name="ObjectShortName">rst_n</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Rst_N" type="logic">
+      <obj_property name="ElementShortName">Rst_N</obj_property>
+      <obj_property name="ObjectShortName">Rst_N</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/start" type="logic">
-      <obj_property name="ElementShortName">start</obj_property>
-      <obj_property name="ObjectShortName">start</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Start" type="logic">
+      <obj_property name="ElementShortName">Start</obj_property>
+      <obj_property name="ObjectShortName">Start</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/relu_en" type="logic">
-      <obj_property name="ElementShortName">relu_en</obj_property>
-      <obj_property name="ObjectShortName">relu_en</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Relu_En" type="logic">
+      <obj_property name="ElementShortName">Relu_En</obj_property>
+      <obj_property name="ObjectShortName">Relu_En</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/busy" type="logic">
-      <obj_property name="ElementShortName">busy</obj_property>
-      <obj_property name="ObjectShortName">busy</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Busy" type="logic">
+      <obj_property name="ElementShortName">Busy</obj_property>
+      <obj_property name="ObjectShortName">Busy</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/scan_done" type="logic">
-      <obj_property name="ElementShortName">scan_done</obj_property>
-      <obj_property name="ObjectShortName">scan_done</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Scan_Done" type="logic">
+      <obj_property name="ElementShortName">Scan_Done</obj_property>
+      <obj_property name="ObjectShortName">Scan_Done</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/img_we" type="logic">
-      <obj_property name="ElementShortName">img_we</obj_property>
-      <obj_property name="ObjectShortName">img_we</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_We" type="logic">
+      <obj_property name="ElementShortName">Img_We</obj_property>
+      <obj_property name="ObjectShortName">Img_We</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/img_waddr" type="array">
-      <obj_property name="ElementShortName">img_waddr[9:0]</obj_property>
-      <obj_property name="ObjectShortName">img_waddr[9:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_Waddr" type="array">
+      <obj_property name="ElementShortName">Img_Waddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Waddr[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/img_wdata" type="array">
-      <obj_property name="ElementShortName">img_wdata[7:0]</obj_property>
-      <obj_property name="ObjectShortName">img_wdata[7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_Wdata" type="array">
+      <obj_property name="ElementShortName">Img_Wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Wdata[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/kernel_we" type="logic">
-      <obj_property name="ElementShortName">kernel_we</obj_property>
-      <obj_property name="ObjectShortName">kernel_we</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kernel_We" type="logic">
+      <obj_property name="ElementShortName">Kernel_We</obj_property>
+      <obj_property name="ObjectShortName">Kernel_We</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/kernel_windex" type="array">
-      <obj_property name="ElementShortName">kernel_windex[3:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_windex[3:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kernel_Windex" type="array">
+      <obj_property name="ElementShortName">Kernel_Windex[3:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Windex[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/kernel_wdata" type="array">
-      <obj_property name="ElementShortName">kernel_wdata[7:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_wdata[7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kernel_Wdata" type="array">
+      <obj_property name="ElementShortName">Kernel_Wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Wdata[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/out_rd_en" type="logic">
-      <obj_property name="ElementShortName">out_rd_en</obj_property>
-      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Rd_En" type="logic">
+      <obj_property name="ElementShortName">Out_Rd_En</obj_property>
+      <obj_property name="ObjectShortName">Out_Rd_En</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/out_data" type="array">
-      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
-      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Data" type="array">
+      <obj_property name="ElementShortName">Out_Data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Data[19:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/out_valid" type="logic">
-      <obj_property name="ElementShortName">out_valid</obj_property>
-      <obj_property name="ObjectShortName">out_valid</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Valid" type="logic">
+      <obj_property name="ElementShortName">Out_Valid</obj_property>
+      <obj_property name="ObjectShortName">Out_Valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/out_full" type="logic">
-      <obj_property name="ElementShortName">out_full</obj_property>
-      <obj_property name="ObjectShortName">out_full</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Full" type="logic">
+      <obj_property name="ElementShortName">Out_Full</obj_property>
+      <obj_property name="ObjectShortName">Out_Full</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/mem_raddr" type="array">
-      <obj_property name="ElementShortName">mem_raddr[9:0]</obj_property>
-      <obj_property name="ObjectShortName">mem_raddr[9:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Mem_Raddr" type="array">
+      <obj_property name="ElementShortName">Mem_Raddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">Mem_Raddr[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/streaming" type="logic">
-      <obj_property name="ElementShortName">streaming</obj_property>
-      <obj_property name="ObjectShortName">streaming</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Streaming" type="logic">
+      <obj_property name="ElementShortName">Streaming</obj_property>
+      <obj_property name="ObjectShortName">Streaming</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/raw_valid" type="logic">
-      <obj_property name="ElementShortName">raw_valid</obj_property>
-      <obj_property name="ObjectShortName">raw_valid</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Raw_Valid" type="logic">
+      <obj_property name="ElementShortName">Raw_Valid</obj_property>
+      <obj_property name="ObjectShortName">Raw_Valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/pixel_in" type="array">
-      <obj_property name="ElementShortName">pixel_in[7:0]</obj_property>
-      <obj_property name="ObjectShortName">pixel_in[7:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Pixel_In" type="array">
+      <obj_property name="ElementShortName">Pixel_In[7:0]</obj_property>
+      <obj_property name="ObjectShortName">Pixel_In[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/kernel_flat" type="array">
-      <obj_property name="ElementShortName">kernel_flat[71:0]</obj_property>
-      <obj_property name="ObjectShortName">kernel_flat[71:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kernel_Flat" type="array">
+      <obj_property name="ElementShortName">Kernel_Flat[71:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_Flat[71:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/shift_en_d1" type="logic">
-      <obj_property name="ElementShortName">shift_en_d1</obj_property>
-      <obj_property name="ObjectShortName">shift_en_d1</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Shift_En_D1" type="logic">
+      <obj_property name="ElementShortName">Shift_En_D1</obj_property>
+      <obj_property name="ObjectShortName">Shift_En_D1</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/valid_tag_d1" type="logic">
-      <obj_property name="ElementShortName">valid_tag_d1</obj_property>
-      <obj_property name="ObjectShortName">valid_tag_d1</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Valid_Tag_D1" type="logic">
+      <obj_property name="ElementShortName">Valid_Tag_D1</obj_property>
+      <obj_property name="ObjectShortName">Valid_Tag_D1</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/row_taps_flat" type="array">
-      <obj_property name="ElementShortName">row_taps_flat[23:0]</obj_property>
-      <obj_property name="ObjectShortName">row_taps_flat[23:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Row_Taps_Flat" type="array">
+      <obj_property name="ElementShortName">Row_Taps_Flat[23:0]</obj_property>
+      <obj_property name="ObjectShortName">Row_Taps_Flat[23:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/window_flat" type="array">
-      <obj_property name="ElementShortName">window_flat[71:0]</obj_property>
-      <obj_property name="ObjectShortName">window_flat[71:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Window_Flat" type="array">
+      <obj_property name="ElementShortName">Window_Flat[71:0]</obj_property>
+      <obj_property name="ObjectShortName">Window_Flat[71:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/valid_tag_d2" type="logic">
-      <obj_property name="ElementShortName">valid_tag_d2</obj_property>
-      <obj_property name="ObjectShortName">valid_tag_d2</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Valid_Tag_D2" type="logic">
+      <obj_property name="ElementShortName">Valid_Tag_D2</obj_property>
+      <obj_property name="ObjectShortName">Valid_Tag_D2</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/mac_valid_out" type="logic">
-      <obj_property name="ElementShortName">mac_valid_out</obj_property>
-      <obj_property name="ObjectShortName">mac_valid_out</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Mac_Valid_Out" type="logic">
+      <obj_property name="ElementShortName">Mac_Valid_Out</obj_property>
+      <obj_property name="ObjectShortName">Mac_Valid_Out</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/mac_acc_out" type="array">
-      <obj_property name="ElementShortName">mac_acc_out[19:0]</obj_property>
-      <obj_property name="ObjectShortName">mac_acc_out[19:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Mac_Acc_Out" type="array">
+      <obj_property name="ElementShortName">Mac_Acc_Out[19:0]</obj_property>
+      <obj_property name="ObjectShortName">Mac_Acc_Out[19:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/PIXEL_W" type="array">
-      <obj_property name="ElementShortName">PIXEL_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">PIXEL_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Pixel_W" type="array">
+      <obj_property name="ElementShortName">Pixel_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Pixel_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/KERNEL_W" type="array">
-      <obj_property name="ElementShortName">KERNEL_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">KERNEL_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kernel_W" type="array">
+      <obj_property name="ElementShortName">Kernel_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Kernel_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/ACC_W" type="array">
-      <obj_property name="ElementShortName">ACC_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ACC_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Acc_W" type="array">
+      <obj_property name="ElementShortName">Acc_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Acc_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/IMG_W" type="array">
-      <obj_property name="ElementShortName">IMG_W[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_W[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_W" type="array">
+      <obj_property name="ElementShortName">Img_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_W[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/IMG_H" type="array">
-      <obj_property name="ElementShortName">IMG_H[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_H[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_H" type="array">
+      <obj_property name="ElementShortName">Img_H[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_H[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/K" type="array">
+   <wvobject fp_name="/tb_top/Dut/K" type="array">
       <obj_property name="ElementShortName">K[31:0]</obj_property>
       <obj_property name="ObjectShortName">K[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/IMG_ADDRW" type="array">
-      <obj_property name="ElementShortName">IMG_ADDRW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">IMG_ADDRW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Img_Addrw" type="array">
+      <obj_property name="ElementShortName">Img_Addrw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Img_Addrw[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/KIDXW" type="array">
-      <obj_property name="ElementShortName">KIDXW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">KIDXW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Kidxw" type="array">
+      <obj_property name="ElementShortName">Kidxw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Kidxw[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/OUT_DEPTH" type="array">
-      <obj_property name="ElementShortName">OUT_DEPTH[31:0]</obj_property>
-      <obj_property name="ObjectShortName">OUT_DEPTH[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Depth" type="array">
+      <obj_property name="ElementShortName">Out_Depth[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Depth[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_top/dut/OUT_AW" type="array">
-      <obj_property name="ElementShortName">OUT_AW[31:0]</obj_property>
-      <obj_property name="ObjectShortName">OUT_AW[31:0]</obj_property>
+   <wvobject fp_name="/tb_top/Dut/Out_Aw" type="array">
+      <obj_property name="ElementShortName">Out_Aw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">Out_Aw[31:0]</obj_property>
    </wvobject>
 </wave_config>

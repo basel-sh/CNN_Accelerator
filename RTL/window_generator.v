@@ -1,51 +1,51 @@
 //==============================================================================
-// File   : window_generator.v  |  Module: window_generator  |  Phase 5
-// Consumes K row taps (one per output row of the window) and maintains K
-// independent K-deep column shift registers, forming the full KxK sliding
-// convolution window (stride 1). window[row][col], row=0 (top/oldest) to
-// K-1 (bottom/current); col=0 (left/oldest) to K-1 (right/current).
+// window_generator.v | Module: window_generator | Phase 5 - Window Generator
+// Consumes K row taps and maintains K independent K-deep column shift
+// registers, forming the full KxK sliding convolution window (stride 1).
+// Window[row][col]: row 0 = top/oldest .. K-1 = bottom/current;
+//                    col 0 = left/oldest .. K-1 = right/current.
 //==============================================================================
 module window_generator #(
-    parameter PIXEL_W = 8,
+    parameter Pixel_W = 8,
     parameter K       = 3
 )(
-    input  wire                     clk,
-    input  wire                     rst_n,
-    input  wire                     shift_en,
-    input  wire [K*PIXEL_W-1:0]     row_taps_flat,
-    output wire [K*K*PIXEL_W-1:0]   window_flat
+    input  wire                     Clk,
+    input  wire                     Rst_N,
+    input  wire                     Shift_En,
+    input  wire [K*Pixel_W-1:0]     Row_Taps_Flat,
+    output wire [K*K*Pixel_W-1:0]   Window_Flat
 );
-    wire [PIXEL_W-1:0] row_tap [0:K-1];
-    genvar r, c;
+    wire [Pixel_W-1:0] Row_Tap [0:K-1];
+    genvar R, C;
     generate
-        for (r = 0; r < K; r = r + 1) begin : UNPACK_TAPS
-            assign row_tap[r] = row_taps_flat[(r+1)*PIXEL_W-1 -: PIXEL_W];
+        for (R = 0; R < K; R = R + 1) begin : Unpack_Taps
+            assign Row_Tap[R] = Row_Taps_Flat[(R+1)*Pixel_W-1 -: Pixel_W];
         end
     endgenerate
 
-    reg [PIXEL_W-1:0] col_reg [0:K-1][0:K-1];
-    integer i, j;
+    reg [Pixel_W-1:0] Col_Reg [0:K-1][0:K-1];
+    integer I, J;
 
     generate
-        for (r = 0; r < K; r = r + 1) begin : ROW
-            always @(posedge clk or negedge rst_n) begin
-                if (!rst_n) begin
-                    for (j = 0; j < K; j = j + 1)
-                        col_reg[r][j] <= {PIXEL_W{1'b0}};
-                end else if (shift_en) begin
-                    for (j = 0; j < K-1; j = j + 1)
-                        col_reg[r][j] <= col_reg[r][j+1];
-                    col_reg[r][K-1] <= row_tap[r];
+        for (R = 0; R < K; R = R + 1) begin : Row
+            always @(posedge Clk or negedge Rst_N) begin
+                if (!Rst_N) begin
+                    for (J = 0; J < K; J = J + 1)
+                        Col_Reg[R][J] <= {Pixel_W{1'b0}};
+                end else if (Shift_En) begin
+                    for (J = 0; J < K-1; J = J + 1)
+                        Col_Reg[R][J] <= Col_Reg[R][J+1];
+                    Col_Reg[R][K-1] <= Row_Tap[R];
                 end
             end
         end
     endgenerate
 
     generate
-        for (r = 0; r < K; r = r + 1) begin : PACK_ROW
-            for (c = 0; c < K; c = c + 1) begin : PACK_COL
-                localparam integer G = r*K + c;
-                assign window_flat[(G+1)*PIXEL_W-1 -: PIXEL_W] = col_reg[r][c];
+        for (R = 0; R < K; R = R + 1) begin : Pack_Row
+            for (C = 0; C < K; C = C + 1) begin : Pack_Col
+                localparam integer G = R*K + C;
+                assign Window_Flat[(G+1)*Pixel_W-1 -: Pixel_W] = Col_Reg[R][C];
             end
         end
     endgenerate

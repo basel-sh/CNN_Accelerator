@@ -1,8 +1,11 @@
 # Verification Results — Phase 9 (Simulation)
 
-Status as of this run: **Phases 2–9 implemented and passing.** Phases
-10–14 (optimization, Vivado synthesis/timing/power, final report) are still
+Status as of this run: **Phases 2-9 implemented and passing.** Phases
+10-14 (optimization, Vivado synthesis/timing/power, final report) are still
 pending and require the Vivado GUI/toolchain — see "What's left" below.
+Naming: all signals below use the `First_Second` convention (root
+`README.md` §6) — this doc was refreshed after that rename; the RTL logic
+itself did not change and 900/900 outputs are still bit-exact.
 
 ## What was implemented and run
 
@@ -38,12 +41,12 @@ pending and require the Vivado GUI/toolchain — see "What's left" below.
    identical, unambiguous in any simulator/synthesizer. Re-introducing a
    BRAM-backed version (lower FF count) is a tracked Phase 10 item, using a
    true dual-port RAM with distinct, never-simultaneously-equal addresses.
-2. **`tb_top.v` preload loops** changed stimulus signals (`img_we`,
-   `img_waddr`, ...) using blocking assignments immediately after
-   `@(posedge clk)` — a classic testbench/DUT same-edge race, non-
+2. **`tb_top.v` preload loops** changed stimulus signals (`Img_We`,
+   `Img_Waddr`, ...) using blocking assignments immediately after
+   `@(posedge Clk)` — a classic testbench/DUT same-edge race, non-
    deterministically dropping about half the writes. Fixed by driving all
-   stimulus changes on `@(negedge clk)`, safely away from the DUT's own
-   `@(posedge clk)` logic.
+   stimulus changes on `@(negedge Clk)`, safely away from the DUT's own
+   `@(posedge Clk)` logic.
 
 ## What's left (needs the Vivado GUI, on your machine)
 

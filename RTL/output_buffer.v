@@ -1,40 +1,40 @@
 //==============================================================================
-// File   : output_buffer.v  |  Module: output_buffer  |  Phase 8
+// output_buffer.v | Module: output_buffer | Phase 8 - Top Integration
 // Applies optional ReLU to each valid MAC result and pushes it into a fifo.v
-// instance, decoupling MAC production timing from result consumption timing.
+// instance, decoupling MAC production timing from result consumption.
 //==============================================================================
 module output_buffer #(
-    parameter ACC_W = 20,
-    parameter DEPTH = 1024,
-    parameter AW    = 10
+    parameter Acc_W = 20,
+    parameter Depth = 1024,
+    parameter Aw    = 10
 )(
-    input  wire                     clk,
-    input  wire                     rst_n,
-    input  wire                     relu_en,
-    input  wire                     valid_in,
-    input  wire signed [ACC_W-1:0]  data_in,
-    input  wire                     rd_en,
-    output wire signed [ACC_W-1:0]  data_out,
-    output wire                     out_valid,   // !empty
-    output wire                     full
+    input  wire                     Clk,
+    input  wire                     Rst_N,
+    input  wire                     Relu_En,
+    input  wire                     Valid_In,
+    input  wire signed [Acc_W-1:0]  Data_In,
+    input  wire                     Rd_En,
+    output wire signed [Acc_W-1:0]  Data_Out,
+    output wire                     Out_Valid,   // !Empty
+    output wire                     Full
 );
-    wire signed [ACC_W-1:0] relu_data = (relu_en && data_in[ACC_W-1]) ? {ACC_W{1'b0}} : data_in;
-    wire empty;
+    wire signed [Acc_W-1:0] Relu_Data = (Relu_En && Data_In[Acc_W-1]) ? {Acc_W{1'b0}} : Data_In;
+    wire Empty;
 
     fifo #(
-        .WIDTH(ACC_W),
-        .DEPTH(DEPTH),
-        .AW(AW)
-    ) u_fifo (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .wr_en   (valid_in),
-        .wr_data (relu_data),
-        .rd_en   (rd_en),
-        .rd_data (data_out),
-        .full    (full),
-        .empty   (empty)
+        .Width(Acc_W),
+        .Depth(Depth),
+        .Aw(Aw)
+    ) U_Fifo (
+        .Clk      (Clk),
+        .Rst_N    (Rst_N),
+        .Wr_En    (Valid_In),
+        .Wr_Data  (Relu_Data),
+        .Rd_En    (Rd_En),
+        .Rd_Data  (Data_Out),
+        .Full     (Full),
+        .Empty    (Empty)
     );
 
-    assign out_valid = ~empty;
+    assign Out_Valid = ~Empty;
 endmodule
