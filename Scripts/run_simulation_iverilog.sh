@@ -45,3 +45,6 @@ echo "== [4/4] Comparing RTL output to the golden model =="
 python3 Python/verify.py --image Images/input_image.mem \
   --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem \
   --img-size 32 32 --k 3 --acc-width 20
+
+echo "== Waveform =="
+echo "Dumped to sim/tb_top.vcd -- open it with: gtkwave sim/tb_top.vcd"

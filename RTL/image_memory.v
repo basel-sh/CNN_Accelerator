@@ -5,27 +5,27 @@
 //==============================================================================
 module image_memory #(
     parameter PIXEL_W = 8,
-    parameter IMG_W   = 32,
-    parameter IMG_H   = 32,
-    parameter ADDRW   = 10          // ceil(log2(IMG_W*IMG_H))
+    parameter IMG_W    = 32,
+    parameter IMG_H    = 32,
+    parameter ADDRW    = $clog2(IMG_W * IMG_H)          // ceil(log2(IMG_W*IMG_H))
 )(
-    input  wire                 clk,
-    input  wire                 we,
-    input  wire [ADDRW-1:0]     waddr,
-    input  wire [PIXEL_W-1:0]   wdata,
-    input  wire [ADDRW-1:0]     raddr,
-    output wire [PIXEL_W-1:0]   rdata
+    input  wire                  clk,
+    input  wire                  we,
+    input  wire [ADDRW-1:0]      waddr,
+    input  wire [PIXEL_W-1:0]    wdata,
+    input  wire [ADDRW-1:0]      raddr,
+    output wire [PIXEL_W-1:0]    rdata
 );
     ram #(
         .WIDTH(PIXEL_W),
-        .DEPTH(IMG_W*IMG_H),
+        .DEPTH(IMG_W * IMG_H),
         .ADDRW(ADDRW)
     ) u_ram (
         .clk   (clk),
-        .we    (we),
-        .waddr (waddr),
-        .wdata (wdata),
-        .raddr (raddr),
-        .rdata (rdata)
+        .WriteEnable (we),
+        .WriteAddr (waddr),
+        .WriteData (wdata),
+        .ReadAddr (raddr),
+        .ReadData (rdata)
     );
 endmodule

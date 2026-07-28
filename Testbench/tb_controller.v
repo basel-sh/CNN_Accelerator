@@ -40,6 +40,9 @@ module tb_controller;
     end
 
     initial begin
+        $dumpfile("sim/tb_controller.vcd");
+        $dumpvars(0, tb_controller);
+
         rst_n = 0;
         repeat (3) @(posedge clk);
         @(negedge clk);

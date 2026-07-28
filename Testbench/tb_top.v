@@ -53,6 +53,9 @@ module tb_top;
     integer capture_count;
 
     initial begin
+        $dumpfile("sim/tb_top.vcd");
+        $dumpvars(0, tb_top);
+
         $readmemh("Images/input_image.mem", image_stim);
         $readmemh("Images/kernels/edge_3x3.mem", kernel_stim);
 

@@ -15,12 +15,21 @@ set proj_name  "CNN_Accelerator"
 set proj_dir   "./Vivado"
 set part       "xc7a35tcpg236-1"   ;# TODO: set to your actual target device
 
-# TODO (Phase 11): uncomment and complete once RTL exists
-# create_project $proj_name $proj_dir -part $part -force
-# add_files -norecurse [glob ./RTL/*.v]
-# add_files -fileset sim_1 -norecurse [glob ./Testbench/*.v]
-# add_files -fileset constrs_1 -norecurse ./Vivado/constraints.xdc
-# set_property top top [current_fileset]
-# update_compile_order -fileset sources_1
+set proj_file "$proj_dir/$proj_name.xpr"
 
-puts "build.tcl is a placeholder script - implement in Phase 11 (Synthesis)."
+if {[file exists $proj_file]} {
+    open_project $proj_file
+} else {
+    create_project $proj_name $proj_dir -part $part -force
+}
+
+add_files -norecurse [glob ./RTL/*.v]
+add_files -fileset sim_1 -norecurse [glob ./Testbench/*.v]
+add_files -fileset constrs_1 -norecurse ./Vivado/constraints.xdc
+
+set_property top top [current_fileset]
+set_property top tb_top [get_filesets sim_1]
+update_compile_order -fileset sources_1
+update_compile_order -fileset sim_1
+
+puts "build.tcl: project ready at $proj_file"

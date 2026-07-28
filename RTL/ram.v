@@ -15,17 +15,17 @@ module ram #(
     parameter ADDRW = 10
 )(
     input  wire                  clk,
-    input  wire                  we,
-    input  wire [ADDRW-1:0]      waddr,
-    input  wire [WIDTH-1:0]      wdata,
-    input  wire [ADDRW-1:0]      raddr,
-    output reg  [WIDTH-1:0]      rdata
+    input  wire                  WriteEnable,
+    input  wire [ADDRW-1:0]      WriteAddr,
+    input  wire [WIDTH-1:0]      WriteData,
+    input  wire [ADDRW-1:0]      ReadAddr,
+    output reg  [WIDTH-1:0]      ReadData
 );
     reg [WIDTH-1:0] mem [0:DEPTH-1];
 
     always @(posedge clk) begin
-        if (we)
-            mem[waddr] <= wdata;
-        rdata <= mem[raddr];
+        if (WriteEnable)
+            mem[WriteAddr] <= WriteData;
+        ReadData <= mem[ReadAddr];
     end
 endmodule

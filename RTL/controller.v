@@ -13,7 +13,7 @@ module controller #(
     parameter K     = 3,
     parameter ADDRW = 10
 )(
-    input  wire               clk,
+    input  wire                clk,
     input  wire                rst_n,
     input  wire                start,
     output reg  [ADDRW-1:0]    mem_raddr,

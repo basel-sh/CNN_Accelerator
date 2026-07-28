@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_top_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_top" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="21,104,996 ps"></ZoomStartTime>
+      <ZoomEndTime time="21,105,001 ps"></ZoomEndTime>
+      <Cursor1Time time="21,105,000 ps"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="167"></NameColumnWidth>
+      <ValueColumnWidth column_width="167"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="80" />
+   <wvobject fp_name="/tb_top/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/rst_n" type="logic">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/start" type="logic">
+      <obj_property name="ElementShortName">start</obj_property>
+      <obj_property name="ObjectShortName">start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/relu_en" type="logic">
+      <obj_property name="ElementShortName">relu_en</obj_property>
+      <obj_property name="ObjectShortName">relu_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/img_we" type="logic">
+      <obj_property name="ElementShortName">img_we</obj_property>
+      <obj_property name="ObjectShortName">img_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/img_waddr" type="array">
+      <obj_property name="ElementShortName">img_waddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">img_waddr[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/img_wdata" type="array">
+      <obj_property name="ElementShortName">img_wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">img_wdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/kernel_we" type="logic">
+      <obj_property name="ElementShortName">kernel_we</obj_property>
+      <obj_property name="ObjectShortName">kernel_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/kernel_windex" type="array">
+      <obj_property name="ElementShortName">kernel_windex[3:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_windex[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/kernel_wdata" type="array">
+      <obj_property name="ElementShortName">kernel_wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_wdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_rd_en" type="logic">
+      <obj_property name="ElementShortName">out_rd_en</obj_property>
+      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_data" type="array">
+      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_valid" type="logic">
+      <obj_property name="ElementShortName">out_valid</obj_property>
+      <obj_property name="ObjectShortName">out_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_full" type="logic">
+      <obj_property name="ElementShortName">out_full</obj_property>
+      <obj_property name="ObjectShortName">out_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/busy" type="logic">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/scan_done" type="logic">
+      <obj_property name="ElementShortName">scan_done</obj_property>
+      <obj_property name="ObjectShortName">scan_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/image_stim" type="array">
+      <obj_property name="ElementShortName">image_stim[0:1023][7:0]</obj_property>
+      <obj_property name="ObjectShortName">image_stim[0:1023][7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/kernel_stim" type="array">
+      <obj_property name="ElementShortName">kernel_stim[0:8][7:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_stim[0:8][7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/i" type="array">
+      <obj_property name="ElementShortName">i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_file" type="array">
+      <obj_property name="ElementShortName">out_file[31:0]</obj_property>
+      <obj_property name="ObjectShortName">out_file[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/capture_count" type="array">
+      <obj_property name="ElementShortName">capture_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">capture_count[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/PIXEL_W" type="array">
+      <obj_property name="ElementShortName">PIXEL_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">PIXEL_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/KERNEL_W" type="array">
+      <obj_property name="ElementShortName">KERNEL_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">KERNEL_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/ACC_W" type="array">
+      <obj_property name="ElementShortName">ACC_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ACC_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/IMG_W" type="array">
+      <obj_property name="ElementShortName">IMG_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/IMG_H" type="array">
+      <obj_property name="ElementShortName">IMG_H[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_H[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/K" type="array">
+      <obj_property name="ElementShortName">K[31:0]</obj_property>
+      <obj_property name="ObjectShortName">K[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/IMG_ADDRW" type="array">
+      <obj_property name="ElementShortName">IMG_ADDRW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_ADDRW[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/KIDXW" type="array">
+      <obj_property name="ElementShortName">KIDXW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">KIDXW[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/OUT_DEPTH" type="array">
+      <obj_property name="ElementShortName">OUT_DEPTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OUT_DEPTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/OUT_AW" type="array">
+      <obj_property name="ElementShortName">OUT_AW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OUT_AW[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/TOTAL_PIX" type="array">
+      <obj_property name="ElementShortName">TOTAL_PIX[31:0]</obj_property>
+      <obj_property name="ObjectShortName">TOTAL_PIX[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/NUM_K" type="array">
+      <obj_property name="ElementShortName">NUM_K[31:0]</obj_property>
+      <obj_property name="ObjectShortName">NUM_K[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/EXPECTED_OUTPUTS" type="array">
+      <obj_property name="ElementShortName">EXPECTED_OUTPUTS[31:0]</obj_property>
+      <obj_property name="ObjectShortName">EXPECTED_OUTPUTS[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/rst_n" type="logic">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/start" type="logic">
+      <obj_property name="ElementShortName">start</obj_property>
+      <obj_property name="ObjectShortName">start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/busy" type="logic">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/scan_done" type="logic">
+      <obj_property name="ElementShortName">scan_done</obj_property>
+      <obj_property name="ObjectShortName">scan_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_valid" type="logic">
+      <obj_property name="ElementShortName">out_valid</obj_property>
+      <obj_property name="ObjectShortName">out_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_rd_en" type="logic">
+      <obj_property name="ElementShortName">out_rd_en</obj_property>
+      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/out_data" type="array">
+      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/rst_n" type="logic">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/start" type="logic">
+      <obj_property name="ElementShortName">start</obj_property>
+      <obj_property name="ObjectShortName">start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/relu_en" type="logic">
+      <obj_property name="ElementShortName">relu_en</obj_property>
+      <obj_property name="ObjectShortName">relu_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/busy" type="logic">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/scan_done" type="logic">
+      <obj_property name="ElementShortName">scan_done</obj_property>
+      <obj_property name="ObjectShortName">scan_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/img_we" type="logic">
+      <obj_property name="ElementShortName">img_we</obj_property>
+      <obj_property name="ObjectShortName">img_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/img_waddr" type="array">
+      <obj_property name="ElementShortName">img_waddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">img_waddr[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/img_wdata" type="array">
+      <obj_property name="ElementShortName">img_wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">img_wdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/kernel_we" type="logic">
+      <obj_property name="ElementShortName">kernel_we</obj_property>
+      <obj_property name="ObjectShortName">kernel_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/kernel_windex" type="array">
+      <obj_property name="ElementShortName">kernel_windex[3:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_windex[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/kernel_wdata" type="array">
+      <obj_property name="ElementShortName">kernel_wdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_wdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/out_rd_en" type="logic">
+      <obj_property name="ElementShortName">out_rd_en</obj_property>
+      <obj_property name="ObjectShortName">out_rd_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/out_data" type="array">
+      <obj_property name="ElementShortName">out_data[19:0]</obj_property>
+      <obj_property name="ObjectShortName">out_data[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/out_valid" type="logic">
+      <obj_property name="ElementShortName">out_valid</obj_property>
+      <obj_property name="ObjectShortName">out_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/out_full" type="logic">
+      <obj_property name="ElementShortName">out_full</obj_property>
+      <obj_property name="ObjectShortName">out_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/mem_raddr" type="array">
+      <obj_property name="ElementShortName">mem_raddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_raddr[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/streaming" type="logic">
+      <obj_property name="ElementShortName">streaming</obj_property>
+      <obj_property name="ObjectShortName">streaming</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/raw_valid" type="logic">
+      <obj_property name="ElementShortName">raw_valid</obj_property>
+      <obj_property name="ObjectShortName">raw_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/pixel_in" type="array">
+      <obj_property name="ElementShortName">pixel_in[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pixel_in[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/kernel_flat" type="array">
+      <obj_property name="ElementShortName">kernel_flat[71:0]</obj_property>
+      <obj_property name="ObjectShortName">kernel_flat[71:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/shift_en_d1" type="logic">
+      <obj_property name="ElementShortName">shift_en_d1</obj_property>
+      <obj_property name="ObjectShortName">shift_en_d1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/valid_tag_d1" type="logic">
+      <obj_property name="ElementShortName">valid_tag_d1</obj_property>
+      <obj_property name="ObjectShortName">valid_tag_d1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/row_taps_flat" type="array">
+      <obj_property name="ElementShortName">row_taps_flat[23:0]</obj_property>
+      <obj_property name="ObjectShortName">row_taps_flat[23:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/window_flat" type="array">
+      <obj_property name="ElementShortName">window_flat[71:0]</obj_property>
+      <obj_property name="ObjectShortName">window_flat[71:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/valid_tag_d2" type="logic">
+      <obj_property name="ElementShortName">valid_tag_d2</obj_property>
+      <obj_property name="ObjectShortName">valid_tag_d2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/mac_valid_out" type="logic">
+      <obj_property name="ElementShortName">mac_valid_out</obj_property>
+      <obj_property name="ObjectShortName">mac_valid_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/mac_acc_out" type="array">
+      <obj_property name="ElementShortName">mac_acc_out[19:0]</obj_property>
+      <obj_property name="ObjectShortName">mac_acc_out[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/PIXEL_W" type="array">
+      <obj_property name="ElementShortName">PIXEL_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">PIXEL_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/KERNEL_W" type="array">
+      <obj_property name="ElementShortName">KERNEL_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">KERNEL_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/ACC_W" type="array">
+      <obj_property name="ElementShortName">ACC_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ACC_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/IMG_W" type="array">
+      <obj_property name="ElementShortName">IMG_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_W[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/IMG_H" type="array">
+      <obj_property name="ElementShortName">IMG_H[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_H[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/K" type="array">
+      <obj_property name="ElementShortName">K[31:0]</obj_property>
+      <obj_property name="ObjectShortName">K[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/IMG_ADDRW" type="array">
+      <obj_property name="ElementShortName">IMG_ADDRW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">IMG_ADDRW[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/KIDXW" type="array">
+      <obj_property name="ElementShortName">KIDXW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">KIDXW[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/OUT_DEPTH" type="array">
+      <obj_property name="ElementShortName">OUT_DEPTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OUT_DEPTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/dut/OUT_AW" type="array">
+      <obj_property name="ElementShortName">OUT_AW[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OUT_AW[31:0]</obj_property>
+   </wvobject>
+</wave_config>

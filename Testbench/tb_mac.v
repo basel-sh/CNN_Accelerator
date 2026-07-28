@@ -44,6 +44,9 @@ module tb_mac;
     endtask
 
     initial begin
+        $dumpfile("sim/tb_mac.vcd");
+        $dumpvars(0, tb_mac);
+
         rst_n = 0;
         window_flat = 0; kernel_flat = 0;
         repeat (3) @(posedge clk);

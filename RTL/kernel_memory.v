@@ -7,14 +7,14 @@
 module kernel_memory #(
     parameter K         = 3,
     parameter KERNEL_W  = 8,
-    parameter IDXW      = 4         // ceil(log2(K*K))
+    parameter IDXW      = $clog2(K * K)         // 4
 )(
-    input  wire                        clk,
-    input  wire                        rst_n,
-    input  wire                        we,
-    input  wire [IDXW-1:0]             windex,
-    input  wire signed [KERNEL_W-1:0]  wdata,
-    output wire signed [K*K*KERNEL_W-1:0] kernel_flat
+    input  wire                              clk,
+    input  wire                              rst_n,
+    input  wire                              we,
+    input  wire [IDXW-1:0]                   windex,
+    input  wire signed [KERNEL_W-1:0]        wdata,
+    output wire signed [K*K*KERNEL_W-1:0]    kernel_flat
 );
     reg signed [KERNEL_W-1:0] coeff [0:K*K-1];
     integer i;
