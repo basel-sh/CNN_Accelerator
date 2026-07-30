@@ -11,13 +11,18 @@
 # Interacts with:
 #   RTL/top.v (clock/reset/IO ports), Scripts/synthesize.tcl, Scripts/build.tcl
 #
-# Status: PLACEHOLDER - fill in target board pin assignments and clock period
-#         once the board is selected and top.v ports are finalized.
+# Status: TEMPORARY - no physical board selected yet. Clock added so timing
+#         analysis is meaningful; NSTD-1/UCIO-1 downgraded to Warning so
+#         write_bitstream can complete without real pin assignments.
+#         Before programming a real board, add PACKAGE_PIN + IOSTANDARD for
+#         every port and remove the two SEVERITY overrides below.
 #===============================================================================
 
-## Example primary clock constraint (update period/name to match top.v):
-# create_clock -period 10.000 -name sys_clk [get_ports Clk]
+## Primary clock: 100 MHz assumption (10.000 ns period) - update once board is known
+create_clock -period 10.000 -name sys_clk [get_ports Clk]
 
-## Example I/O pin assignments (board-specific, TODO):
-# set_property PACKAGE_PIN <PIN>  [get_ports Clk]
-# set_property IOSTANDARD  LVCMOS33 [get_ports Clk]
+## No board selected yet -> ports have no PACKAGE_PIN/IOSTANDARD.
+## Downgrade the two blocking DRC checks to Warning so write_bitstream can run.
+## NOT valid for a real board - remove these two lines once pins are assigned.
+set_property SEVERITY {Warning} [get_drc_checks NSTD-1]
+set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
