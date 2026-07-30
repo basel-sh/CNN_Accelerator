@@ -33,7 +33,8 @@ module tb_mac;
             Valid_In = 1;
             @(posedge Clk);
             Valid_In = 0;
-            @(posedge Clk); // wait for registered output
+            @(posedge Clk); // stage 1: products registered
+            @(posedge Clk); // stage 2: sum registered, Acc_Out now valid (mac is 2-cycle latency after the timing-fix pipeline)
             if (Acc_Out !== Expected) begin
                 $display("FAIL: expected=%0d got=%0d", Expected, Acc_Out);
                 Errors = Errors + 1;

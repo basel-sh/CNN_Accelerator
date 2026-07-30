@@ -3,9 +3,12 @@
 // Wires image_memory, kernel_memory, controller, line_buffer,
 // window_generator, mac, and output_buffer into the complete NxN convolution
 // accelerator. Also performs the small pipeline-alignment shifting (the
-// image-memory read register, the window-generator register, and the MAC
-// register each add one cycle) needed to keep the "valid window" tag in
-// lockstep with the data as it flows through the datapath.
+// image-memory read register and the window-generator register each add one
+// cycle) needed to keep the "valid window" tag in lockstep with the data as
+// it flows through the datapath. mac.v is self-contained: it pairs its own
+// Valid_Out with Acc_Out regardless of its internal latency (2 cycles, after
+// the timing-closure pipeline fix), so top.v does not need to track that
+// latency explicitly.
 //==============================================================================
 module top #(
     parameter Pixel_W  = 8,
