@@ -12,17 +12,15 @@
 #   RTL/top.v (clock/reset/IO ports), Scripts/synthesize.tcl, Scripts/build.tcl
 #
 # Status: TEMPORARY - no physical board selected yet. Clock added so timing
-#         analysis is meaningful; NSTD-1/UCIO-1 downgraded to Warning so
-#         write_bitstream can complete without real pin assignments.
+#         analysis is meaningful. The NSTD-1/UCIO-1 DRC severity downgrade
+#         does NOT belong in this .xdc file (XDC only accepts constraint
+#         commands - set_property SEVERITY on a DRC check is silently
+#         ignored here). It lives instead in
+#         Scripts/write_bitstream_pre.tcl, wired up as a write_bitstream
+#         pre-hook on the impl_1 run - see that file for instructions.
 #         Before programming a real board, add PACKAGE_PIN + IOSTANDARD for
-#         every port and remove the two SEVERITY overrides below.
+#         every port and remove that pre-hook + script.
 #===============================================================================
 
 ## Primary clock: 100 MHz assumption (10.000 ns period) - update once board is known
 create_clock -period 10.000 -name sys_clk [get_ports Clk]
-
-## No board selected yet -> ports have no PACKAGE_PIN/IOSTANDARD.
-## Downgrade the two blocking DRC checks to Warning so write_bitstream can run.
-## NOT valid for a real board - remove these two lines once pins are assigned.
-set_property SEVERITY {Warning} [get_drc_checks NSTD-1]
-set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
