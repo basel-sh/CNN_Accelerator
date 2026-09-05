@@ -28,7 +28,7 @@ module controller #(
     localparam S_Idle = 2'd0, S_Run = 2'd1, S_Done = 2'd2;
     reg [1:0] State;
 
-    always @(posedge Clk or negedge Rst_N) begin
+    always @(posedge Clk) begin  // synchronous reset - Mem_Raddr/Streaming feed BlockRAM control pins (REQP-1840 fix)
         if (!Rst_N) begin
             State     <= S_Idle;
             Row       <= {Addrw{1'b0}};

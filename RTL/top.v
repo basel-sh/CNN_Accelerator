@@ -19,8 +19,8 @@ module top #(
     parameter K        = 3,
     parameter Img_Addrw = 10,        // ceil(log2(Img_W*Img_H))
     parameter Kidxw      = 4,        // ceil(log2(K*K))
-    parameter Out_Depth  = 1024,
-    parameter Out_Aw     = 10
+    parameter Out_Depth  = 16,   // right-sized: testbench/host drains Out_Rd_En every cycle, no full-frame buffering needed (was 1024 -> forced ~20k register-based FIFO, see Documentation/OptimizationLog.md)
+    parameter Out_Aw     = 4
 )(
     input  wire                        Clk,
     input  wire                        Rst_N,

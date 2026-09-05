@@ -39,7 +39,7 @@ module line_buffer #(
             integer k;
             wire [Pixel_W-1:0] Stage_In = (G == 0) ? Pixel_In : Tap[K-1-G];
 
-            always @(posedge Clk or negedge Rst_N) begin
+            always @(posedge Clk) begin  // synchronous reset - Chain[] feeds the image_memory RAMB's output register chain (RBOR-1 fix)
                 if (!Rst_N) begin
                     for (k = 0; k < Depth; k = k + 1)
                         Chain[k] <= {Pixel_W{1'b0}};

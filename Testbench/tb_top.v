@@ -13,7 +13,7 @@
 `timescale 1ns/1ps
 module tb_top;
     localparam Pixel_W=8, Kernel_W=8, Acc_W=20, Img_W=32, Img_H=32, K=3;
-    localparam Img_Addrw=10, Kidxw=4, Out_Depth=1024, Out_Aw=10;
+    localparam Img_Addrw=10, Kidxw=4, Out_Depth=16, Out_Aw=4;  // matches RTL/top.v's optimized default
     localparam Total_Pix = Img_W*Img_H;
     localparam Num_K = K*K;
     localparam Expected_Outputs = (Img_W-K+1)*(Img_H-K+1);

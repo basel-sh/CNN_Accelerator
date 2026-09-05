@@ -5,8 +5,8 @@
 //==============================================================================
 module output_buffer #(
     parameter Acc_W = 20,
-    parameter Depth = 1024,
-    parameter Aw    = 10
+    parameter Depth = 16,
+    parameter Aw    = 4
 )(
     input  wire                     Clk,
     input  wire                     Rst_N,
