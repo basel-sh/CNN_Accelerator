@@ -1,24 +1,27 @@
 # Performance Results — Phase 14 (for the final competition report)
 
 Computed from `Reports/timing/timing_summary.rpx`, `Reports/utilization/utilization_report.txt`,
-and `Reports/power/power_summary.rpx` (impl_1, xc7a35tcpg236-1, 2026-07-30).
+and `Documentation/OptimizationLog.md` final confirmed run (impl_1, xc7z020clg400-1 / PYNQ-Z2,
+20 MHz, 2026-09-05).
 
 ## Fmax (maximum clock frequency)
 
-Constrained clock: 100 MHz (10.000 ns period).
-Post-route timing: WNS = +0.661 ns (all constraints met).
+Constrained clock: 20 MHz (50.000 ns period) - the chosen low-power operating point
+(see `Documentation/OptimizationLog.md`).
+Post-route timing: WNS = +35.538 ns (all constraints met).
 
 ```
 Fmax ~= 1000 / (Period_ns - WNS_ns)
-      = 1000 / (10.000 - 0.661)
-      = 1000 / 9.339
-      ~= 107.08 MHz
+      = 1000 / (50.000 - 35.538)
+      = 1000 / 14.462
+      ~= 69.15 MHz
 ```
 
-**Fmax ~= 107.1 MHz** (i.e. the design could be reclocked at ~10.72 ns / ~9.339 ns period
-before setup timing would start failing; this is an estimate from WNS, not a swept/verified
-Fmax - re-running implementation with a tighter clock constraint would give an exact number
-if needed).
+**Fmax ~= 69.1 MHz** (maximum achievable frequency estimated from WNS at the 20 MHz
+constraint; from the final, DRC-clean confirmed run - see `Documentation/OptimizationLog.md`,
+"FINAL confirmed numbers"). The design also closed timing at up to ~111 MHz during an earlier
+100 MHz exploratory run, kept here only as a documented upper bound, not the reported
+operating point.
 
 ## Figure of Merit
 
@@ -29,19 +32,21 @@ FoM = Throughput / (Power x (LUTs + 50*DSPs + 100*BRAMs))
 | Term | Value | Source |
 |---|---|---|
 | Throughput | 1 output pixel/cycle | fully pipelined MAC, steady-state 1 result/cycle |
-| Power | 0.304 W | power_summary.rpx, Total On-Chip Power |
-| LUTs | 7386 | utilization_report.txt, Slice LUTs |
-| DSPs | 0 | utilization_report.txt |
-| BRAMs | 0.5 | utilization_report.txt, Block RAM Tile |
+| Power | 0.149 W | OptimizationLog.md, Total On-Chip Power (Dynamic 0.044 W + Static 0.105 W) |
+| LUTs | 842 | OptimizationLog.md, final confirmed utilization |
+| DSPs | 0 | OptimizationLog.md, final confirmed utilization |
+| BRAMs | 0.5 | OptimizationLog.md, final confirmed utilization |
 
 ```
-FoM = 1 / (0.304 x (7386 + 50*0 + 100*0.5))
-    = 1 / (0.304 x 7436)
-    = 1 / 2260.544
-    ~= 4.42e-4
+FoM = 1 / (0.149 x (842 + 50*0 + 100*0.5))
+    = 1 / (0.149 x 892)
+    = 1 / 132.9
+    ~= 7.52e-3
 ```
 
-**FoM ~= 4.42 x 10^-4** (pixel/cycle per W.unit)
+**FoM ~= 7.52 x 10^-3** (pixel/cycle per W.unit) - a ~19.0x improvement over the
+unoptimized baseline (FoM ~= 3.96e-4; full optimization trail in
+`Documentation/OptimizationLog.md`).
 
 ## Requirement #2 - input precision justification
 
@@ -50,7 +55,8 @@ standard precision for edge-AI vision inputs (matches typical camera ADC / image
 output and common CNN quantization schemes), (b) it is the smallest power-of-two width that
 represents a full 0-255 grayscale range with no quantization loss versus the source image,
 and (c) it keeps `Prod_W` (17 bits) and `Acc_W` (20 bits) small enough to close timing at
-~107 MHz on a low-end Artix-7 (xc7a35t) without DSP slices.
+the chosen 20 MHz operating point (Fmax ~= 69 MHz) on a Zynq-7020 (xc7z020, PYNQ-Z2)
+without DSP slices.
 
 ## Requirement #6 - output precision & overflow handling
 
