@@ -1,9 +1,8 @@
 //==============================================================================
 // top_2px_mp4.v | FoM-optimized true 2-output/cycle accelerator
 //
-// Compared with top_2px, this version keeps the 2-pixel streaming front end
-// but replaces the 18 parallel multipliers with a 4-DSP time-multiplexed MAC.
-// Four DSPs run at 120 MHz while the system interface runs at 20 MHz.
+// The streaming front end is unchanged. The arithmetic engine is now the
+// 3-DSP DSP48E1-accumulator implementation in mac_pair_mp3.v.
 //==============================================================================
 module top_2px_mp4 #(
     parameter Pixel_W       = 8,
@@ -101,7 +100,7 @@ module top_2px_mp4 #(
 
     wire Mac_Valid_Out;
     wire signed [Acc_W-1:0] Mac_Out0, Mac_Out1;
-    mac_pair_mp4 #(
+    mac_pair_mp3 #(
         .Pixel_W(Pixel_W), .Kernel_W(Kernel_W), .Acc_W(Acc_W), .K(K)
     ) U_Mac (
         .Clk_Sys(Clk), .Clk_Fast(Fast_Clk), .Rst_N(Rst_N),
