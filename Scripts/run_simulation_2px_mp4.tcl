@@ -6,6 +6,9 @@ set proj_dir  "./Vivado_2px_MP4"
 set proj_name "CNN_Accelerator_2px_MP4"
 set proj_file "$proj_dir/$proj_name.xpr"
 
+# Close only an already-running simulation/project before opening this one.
+# IMPORTANT: Do NOT close the project at the end. This keeps Vivado open so the
+# user can inspect the waveform, hierarchy and simulation results after run all.
 catch {close_sim -force}
 catch {close_project}
 
@@ -50,8 +53,9 @@ catch {save_wave_config $wcfg_path}
 puts "=============================================================================="
 puts "2px MP4 behavioral simulation complete."
 puts "Output copied to: sim/rtl_output_2px_mp4.mem"
+puts "Vivado project and waveform remain OPEN for inspection."
 puts "=============================================================================="
 
-close_sim -force
-close_project
+# Deliberately leave Vivado/project/simulation open.
+# The user can close the project manually when finished.
 cd $repo_root
