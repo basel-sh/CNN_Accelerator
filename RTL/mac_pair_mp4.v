@@ -17,54 +17,94 @@ module mac_pair_mp4 #(
     localparam integer Prod_W=16;
 
     // -------------------------------------------------------------------------
-    // System -> fast request mailbox.
-    // The payload is held in the system clock domain before the request toggle
-    // is synchronized, so the fast domain samples a stable transaction.
+    // System -> fast request FIFO.
+    //
+    // The previous toggle mailbox could lose requests because the 20 MHz
+    // producer can issue one pair every 50 ns while the request synchronizer
+    // and 5-cycle MAC transaction introduce more than one fast-clock edge of
+    // latency. A toggle is not a queue: two requests can cancel/merge before
+    // the fast side observes them.
+    //
+    // This 16-entry FWFT asynchronous FIFO preserves every input pair. It is
+    // forced to distributed RAM so the CDC queue does not consume a BRAM.
+    // Payload = left window + right window + 9 signed kernel coefficients.
     // -------------------------------------------------------------------------
-    reg [K*K*Pixel_W-1:0] Left_Hold_Sys, Right_Hold_Sys;
-    reg signed [K*K*Kernel_W-1:0] Kernel_Hold_Sys;
-    reg Req_Toggle_Sys;
+    localparam integer REQ_W = 2*K*K*Pixel_W + K*K*Kernel_W;
 
-    always @(posedge Clk_Sys or negedge Rst_N) begin
-        if (!Rst_N) begin
-            Left_Hold_Sys <= 0;
-            Right_Hold_Sys <= 0;
-            Kernel_Hold_Sys <= 0;
-            Req_Toggle_Sys <= 0;
-        end else if (Valid_In) begin
-            Left_Hold_Sys <= Left_Window_Flat;
-            Right_Hold_Sys <= Right_Window_Flat;
-            Kernel_Hold_Sys <= Kernel_Flat;
-            Req_Toggle_Sys <= ~Req_Toggle_Sys;
-        end
-    end
+    wire [REQ_W-1:0] Req_Fifo_Din = {
+        Kernel_Flat,
+        Right_Window_Flat,
+        Left_Window_Flat
+    };
+    wire [REQ_W-1:0] Req_Fifo_Dout;
+    wire Req_Fifo_Full;
+    wire Req_Fifo_Empty;
+    wire Req_Fifo_Overflow;
+    wire Req_Fifo_Underflow;
+    wire Req_Fifo_Wr_Busy;
+    wire Req_Fifo_Rd_Busy;
 
-    (* ASYNC_REG="TRUE" *) reg Req_M1, Req_M2;
-    reg Req_Seen;
+    wire Req_Fifo_Wr_En = Valid_In && !Req_Fifo_Full;
 
-    always @(posedge Clk_Fast or negedge Rst_N) begin
-        if (!Rst_N) begin
-            Req_M1 <= 0;
-            Req_M2 <= 0;
-        end else if (!Fast_Locked) begin
-            Req_M1 <= 0;
-            Req_M2 <= 0;
-        end else begin
-            Req_M1 <= Req_Toggle_Sys;
-            Req_M2 <= Req_M1;
-        end
-    end
+    reg Running;
+    reg Finish_Pending;
+    wire Req_Fifo_Rd_En = Fast_Locked && !Req_Fifo_Empty &&
+                           !Running && !Finish_Pending;
 
-    wire New_Request = Req_M2 ^ Req_Seen;
+    xpm_fifo_async #(
+        .CASCADE_HEIGHT(0),
+        .CDC_SYNC_STAGES(2),
+        .DOUT_RESET_VALUE("0"),
+        .ECC_MODE("no_ecc"),
+        .EN_SIM_ASSERT_ERR("warning"),
+        .FIFO_MEMORY_TYPE("distributed"),
+        .FIFO_READ_LATENCY(0),
+        .FIFO_WRITE_DEPTH(16),
+        .FULL_RESET_VALUE(0),
+        .PROG_EMPTY_THRESH(5),
+        .PROG_FULL_THRESH(12),
+        .RD_DATA_COUNT_WIDTH(5),
+        .READ_DATA_WIDTH(REQ_W),
+        .READ_MODE("fwft"),
+        .RELATED_CLOCKS(0),
+        .SIM_ASSERT_CHK(1),
+        .USE_ADV_FEATURES("0000"),
+        .WAKEUP_TIME(0),
+        .WRITE_DATA_WIDTH(REQ_W),
+        .WR_DATA_COUNT_WIDTH(5)
+    ) U_Request_Fifo (
+        .sleep(1'b0),
+        .rst(~Rst_N),
+        .wr_clk(Clk_Sys),
+        .wr_en(Req_Fifo_Wr_En),
+        .din(Req_Fifo_Din),
+        .full(Req_Fifo_Full),
+        .overflow(Req_Fifo_Overflow),
+        .wr_rst_busy(Req_Fifo_Wr_Busy),
+        .rd_clk(Clk_Fast),
+        .rd_en(Req_Fifo_Rd_En),
+        .dout(Req_Fifo_Dout),
+        .empty(Req_Fifo_Empty),
+        .underflow(Req_Fifo_Underflow),
+        .rd_rst_busy(Req_Fifo_Rd_Busy),
+        .prog_full(),
+        .wr_data_count(),
+        .prog_empty(),
+        .rd_data_count(),
+        .almost_full(),
+        .almost_empty(),
+        .wr_ack(),
+        .data_valid(),
+        .injectsbiterr(1'b0),
+        .injectdbiterr(1'b0),
+        .sbiterr(),
+        .dbiterr()
+    );
 
-    // -------------------------------------------------------------------------
-    // Fast-domain 4-DSP MAC engine.
-    // Five fast cycles evaluate all 18 products for two adjacent windows.
-    // -------------------------------------------------------------------------
-    reg [K*K*Pixel_W-1:0] Left_Hold_Fast, Right_Hold_Fast;
+    reg [K*K*Pixel_W-1:0] Left_Hold_Fast;
+    reg [K*K*Pixel_W-1:0] Right_Hold_Fast;
     reg signed [K*K*Kernel_W-1:0] Kernel_Hold_Fast;
     reg [2:0] Slot;
-    reg Running;
     reg signed [Acc_W-1:0] Acc_A, Acc_B;
 
     wire [4:0] Idx0=(Slot*4)+0;
@@ -107,21 +147,16 @@ module mac_pair_mp4 #(
     wire signed [Acc_W-1:0] E3={{(Acc_W-Prod_W){P3[Prod_W-1]}},P3};
 
     // -------------------------------------------------------------------------
-    // Fast -> system result CDC.
-    // A 2-slot mailbox was not sufficient: the two-flop synchronizer adds
-    // latency, so the producer could reuse a slot before the system domain
-    // consumed it. A small asynchronous FIFO removes that race while keeping
-    // the result path at 2 outputs/system-cycle.
+    // Fast-domain 4-DSP MAC engine.
+    // Five fast cycles evaluate all 18 products for two adjacent windows.
     // -------------------------------------------------------------------------
-    localparam integer FIFO_AW = 2;
-    localparam integer FIFO_PW = FIFO_AW + 1;
-
     reg signed [Acc_W-1:0] Result_A_Fifo [0:3];
     reg signed [Acc_W-1:0] Result_B_Fifo [0:3];
 
+    localparam integer FIFO_AW = 2;
+    localparam integer FIFO_PW = FIFO_AW + 1;
     reg [FIFO_PW-1:0] Fifo_WBin, Fifo_WGray;
     reg [FIFO_PW-1:0] Fifo_RBin, Fifo_RGray;
-
     (* ASYNC_REG="TRUE" *) reg [FIFO_PW-1:0] Fifo_RGray_M1, Fifo_RGray_M2;
     (* ASYNC_REG="TRUE" *) reg [FIFO_PW-1:0] Fifo_WGray_M1, Fifo_WGray_M2;
 
@@ -130,13 +165,11 @@ module mac_pair_mp4 #(
     wire [FIFO_PW-1:0] Fifo_RBin_Next = Fifo_RBin + 1'b1;
     wire [FIFO_PW-1:0] Fifo_RGray_Next = (Fifo_RBin_Next >> 1) ^ Fifo_RBin_Next;
 
-    // Standard asynchronous FIFO full comparison for a 4-entry FIFO.
     wire Fifo_Full = (Fifo_WGray_Next ==
                       {~Fifo_RGray_M2[FIFO_PW-1:FIFO_PW-2],
                        Fifo_RGray_M2[FIFO_PW-3:0]});
     wire Fifo_Empty = (Fifo_RGray == Fifo_WGray_M2);
 
-    // Synchronize read pointer into fast domain.
     always @(posedge Clk_Fast or negedge Rst_N) begin
         if (!Rst_N) begin
             Fifo_RGray_M1 <= 0;
@@ -150,7 +183,6 @@ module mac_pair_mp4 #(
         end
     end
 
-    // Synchronize write pointer into system domain.
     always @(posedge Clk_Sys or negedge Rst_N) begin
         if (!Rst_N) begin
             Fifo_WGray_M1 <= 0;
@@ -165,8 +197,8 @@ module mac_pair_mp4 #(
     always @(posedge Clk_Fast or negedge Rst_N) begin
         if (!Rst_N) begin
             Running <= 0;
+            Finish_Pending <= 0;
             Slot <= 0;
-            Req_Seen <= 0;
             Acc_A <= 0;
             Acc_B <= 0;
             Left_Hold_Fast <= 0;
@@ -180,14 +212,15 @@ module mac_pair_mp4 #(
             end
         end else if (!Fast_Locked) begin
             Running <= 0;
-            Req_Seen <= Req_M2;
+            Finish_Pending <= 0;
             Fifo_WBin <= 0;
             Fifo_WGray <= 0;
-        end else if (New_Request && !Running && !Fifo_Full) begin
-            Left_Hold_Fast <= Left_Hold_Sys;
-            Right_Hold_Fast <= Right_Hold_Sys;
-            Kernel_Hold_Fast <= Kernel_Hold_Sys;
-            Req_Seen <= Req_M2;
+        end else if (Req_Fifo_Rd_En) begin
+            // FWFT exposes the oldest request on dout before rd_en. Capture
+            // it on this edge, then the FIFO advances to the next request.
+            Left_Hold_Fast <= Req_Fifo_Dout[K*K*Pixel_W-1:0];
+            Right_Hold_Fast <= Req_Fifo_Dout[2*K*K*Pixel_W-1:K*K*Pixel_W];
+            Kernel_Hold_Fast <= Req_Fifo_Dout[REQ_W-1:2*K*K*Pixel_W];
             Running <= 1;
             Slot <= 0;
             Acc_A <= 0;
@@ -207,17 +240,26 @@ module mac_pair_mp4 #(
                         Fifo_WBin <= Fifo_WBin_Next;
                         Fifo_WGray <= Fifo_WGray_Next;
                         Running <= 0;
+                    end else begin
+                        Finish_Pending <= 1;
                     end
-                    // If full, remain on Slot 4 and retry next fast cycle.
                 end
                 default: Running <= 0;
             endcase
             if (Slot!=4) Slot <= Slot+1'b1;
+        end else if (Finish_Pending && !Fifo_Full) begin
+            Result_A_Fifo[Fifo_WBin[FIFO_AW-1:0]] <= Acc_A;
+            Result_B_Fifo[Fifo_WBin[FIFO_AW-1:0]] <= Acc_B + E0 + E1;
+            Fifo_WBin <= Fifo_WBin_Next;
+            Fifo_WGray <= Fifo_WGray_Next;
+            Finish_Pending <= 0;
+            Running <= 0;
         end
     end
 
-    // System-domain FIFO consumer. Data is only popped when the external
-    // reader is enabled, so the head remains stable during backpressure.
+    // -------------------------------------------------------------------------
+    // System-domain result FIFO consumer.
+    // -------------------------------------------------------------------------
     always @(posedge Clk_Sys or negedge Rst_N) begin
         if (!Rst_N) begin
             Fifo_RBin <= 0;
