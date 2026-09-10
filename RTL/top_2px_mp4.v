@@ -107,11 +107,11 @@ module top_2px_mp4 #(
         .Clk_Sys(Clk), .Clk_Fast(Fast_Clk), .Rst_N(Rst_N),
         .Fast_Locked(Fast_Locked), .Valid_In(Pair_Valid_D2),
         .Left_Window_Flat(Window_A_Flat), .Right_Window_Flat(Window_B_Flat),
-        .Kernel_Flat(Kernel_Flat), .Valid_Out(Mac_Valid_Out),
-        .Left_Acc_Out(Mac_Out0), .Right_Acc_Out(Mac_Out1)
+        .Kernel_Flat(Kernel_Flat), .Out_Rd_En(Out_Rd_En),
+        .Valid_Out(Mac_Valid_Out), .Left_Acc_Out(Mac_Out0), .Right_Acc_Out(Mac_Out1)
     );
 
-    assign Out_Valid = Mac_Valid_Out && Out_Rd_En;
+    assign Out_Valid = Mac_Valid_Out;
     assign Out_Full  = 1'b0;
     assign Out_Data0 = (Relu_En && Mac_Out0[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out0;
     assign Out_Data1 = (Relu_En && Mac_Out1[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out1;
