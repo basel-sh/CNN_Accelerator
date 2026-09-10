@@ -42,13 +42,7 @@ slot 3 -> right[3..6]
 slot 4 -> right[7..8]
 ```
 
-This is the main FoM optimization because the competition denominator weights every DSP by 50. Four DSPs are therefore much cheaper in the FoM denominator than 18 DSPs, while the 120 MHz internal clock supplies enough arithmetic bandwidth to preserve the 2px/system-cycle rate.
-
-Vivado is explicitly told to map the four multipliers to DSPs using `USE_DSP="yes"`. AMD documents `USE_DSP` as the synthesis control for forcing multiplier structures into DSP blocks. citeturn3search0turn3search1
-
-The 7-series DSP48E1 has a 25x18 multiplier and extensive pipeline support, so the 8-bit/9-bit arithmetic used here is well within the DSP multiplier input capability. citeturn0search19turn0search0
-
-The internal clock is generated with an MMCM. For 7-series devices the MMCM frequency relation is `Fvco = Fclk_in*M/D` and `Fout = Fclk_in*M/(D*O)`; this design uses 20 MHz -> 960 MHz VCO -> 120 MHz output. citeturn2search12
+The MAC explicitly sign-extends the unsigned pixel and signed kernel operands before multiplication. This is required because Verilog multiplication expression sizing can otherwise truncate the product before assignment to a wider destination.
 
 ## Simulation: optimized candidate
 
@@ -58,7 +52,7 @@ From the repository root, open Vivado Tcl and run:
 source Scripts/run_simulation_2px_mp4.tcl
 ```
 
-The simulation writes:
+The script writes the generated output into the repository-level:
 
 `sim/rtl_output_2px_mp4.mem`
 

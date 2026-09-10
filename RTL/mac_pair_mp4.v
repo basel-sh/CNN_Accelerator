@@ -26,7 +26,6 @@ module mac_pair_mp4 #(
     localparam integer N      = K*K;
     localparam integer Prod_W = 16;
 
-    // System-domain transaction holding registers.
     reg [K*K*Pixel_W-1:0] Left_Hold_Sys;
     reg [K*K*Pixel_W-1:0] Right_Hold_Sys;
     reg signed [K*K*Kernel_W-1:0] Kernel_Hold_Sys;
@@ -46,8 +45,6 @@ module mac_pair_mp4 #(
         end
     end
 
-    // Request synchronizer into the fast clock domain. Req_Seen is owned only
-    // by the engine state machine below.
     reg Req_M1, Req_M2, Req_Seen;
     reg Done_Toggle_Fast;
     always @(posedge Clk_Fast or negedge Rst_N) begin
@@ -73,8 +70,6 @@ module mac_pair_mp4 #(
     reg signed [Acc_W-1:0] Acc_A, Acc_B;
     reg signed [Acc_W-1:0] Final_A_Fast, Final_B_Fast;
 
-    // Product indices 0..8 belong to the left output; 9..17 belong to the
-    // right output. Slots 0..4 issue 4,4,4,4,2 products respectively.
     wire [4:0] Idx0 = (Slot * 4) + 0;
     wire [4:0] Idx1 = (Slot * 4) + 1;
     wire [4:0] Idx2 = (Slot * 4) + 2;
@@ -106,12 +101,22 @@ module mac_pair_mp4 #(
         $signed(Kernel_Hold_Fast[(Idx3+1)*Kernel_W-1 -: Kernel_W]) :
         ((Idx3 < 18) ? $signed(Kernel_Hold_Fast[(Idx3-9+1)*Kernel_W-1 -: Kernel_W]) : {Kernel_W{1'b0}});
 
-    // Explicit 17-bit multiplication context prevents Verilog expression-size
-    // ambiguity. The mathematical range fits exactly in the low 16 bits.
-    (* use_dsp = "yes" *) wire signed [16:0] M0 = $signed({1'b0, Pix0}) * Coef0;
-    (* use_dsp = "yes" *) wire signed [16:0] M1 = $signed({1'b0, Pix1}) * Coef1;
-    (* use_dsp = "yes" *) wire signed [16:0] M2 = $signed({1'b0, Pix2}) * Coef2;
-    (* use_dsp = "yes" *) wire signed [16:0] M3 = $signed({1'b0, Pix3}) * Coef3;
+    // Explicitly extend BOTH operands to 17 signed bits before multiplication.
+    // In Verilog, a multiply expression is sized from its operands; merely
+    // assigning a narrow multiply to a wider wire does not prevent overflow.
+    wire signed [16:0] Pix0_Ext = $signed({9'b0, Pix0});
+    wire signed [16:0] Pix1_Ext = $signed({9'b0, Pix1});
+    wire signed [16:0] Pix2_Ext = $signed({9'b0, Pix2});
+    wire signed [16:0] Pix3_Ext = $signed({9'b0, Pix3});
+    wire signed [16:0] Coef0_Ext = {{9{Coef0[Kernel_W-1]}}, Coef0};
+    wire signed [16:0] Coef1_Ext = {{9{Coef1[Kernel_W-1]}}, Coef1};
+    wire signed [16:0] Coef2_Ext = {{9{Coef2[Kernel_W-1]}}, Coef2};
+    wire signed [16:0] Coef3_Ext = {{9{Coef3[Kernel_W-1]}}, Coef3};
+
+    (* use_dsp = "yes" *) wire signed [16:0] M0 = Pix0_Ext * Coef0_Ext;
+    (* use_dsp = "yes" *) wire signed [16:0] M1 = Pix1_Ext * Coef1_Ext;
+    (* use_dsp = "yes" *) wire signed [16:0] M2 = Pix2_Ext * Coef2_Ext;
+    (* use_dsp = "yes" *) wire signed [16:0] M3 = Pix3_Ext * Coef3_Ext;
 
     wire signed [Prod_W-1:0] P0 = M0[15:0];
     wire signed [Prod_W-1:0] P1 = M1[15:0];
@@ -133,6 +138,9 @@ module mac_pair_mp4 #(
             Acc_B            <= {Acc_W{1'b0}};
             Final_A_Fast     <= {Acc_W{1'b0}};
             Final_B_Fast     <= {Acc_W{1'b0}};
+            Left_Hold_Fast   <= {K*K*Pixel_W{1'b0}};
+            Right_Hold_Fast  <= {K*K*Pixel_W{1'b0}};
+            Kernel_Hold_Fast <= {K*K*Kernel_W{1'b0}};
         end else if (!Fast_Locked) begin
             Running          <= 1'b0;
             Req_Seen         <= Req_M2;
@@ -155,7 +163,6 @@ module mac_pair_mp4 #(
             end else if (Slot == 3'd3) begin
                 Acc_B <= Acc_B + E0 + E1 + E2 + E3;
             end else begin
-                // Slot 4 contains right products 7 and 8 only.
                 Final_A_Fast     <= Acc_A;
                 Final_B_Fast     <= Acc_B + E0 + E1;
                 Running          <= 1'b0;
@@ -166,7 +173,6 @@ module mac_pair_mp4 #(
         end
     end
 
-    // Return result and valid pulse to the system domain.
     reg Done_M1, Done_M2, Done_Seen;
     always @(posedge Clk_Sys or negedge Rst_N) begin
         if (!Rst_N) begin
