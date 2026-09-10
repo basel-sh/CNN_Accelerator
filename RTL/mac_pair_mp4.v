@@ -52,11 +52,9 @@ module mac_pair_mp4 #(
                            !Running && !Finish_Pending;
 
     xpm_fifo_async #(
-        .CASCADE_HEIGHT(0),
         .CDC_SYNC_STAGES(2),
         .DOUT_RESET_VALUE("0"),
         .ECC_MODE("no_ecc"),
-        .EN_SIM_ASSERT_ERR("warning"),
         .FIFO_MEMORY_TYPE("distributed"),
         .FIFO_READ_LATENCY(0),
         .FIFO_WRITE_DEPTH(16),
@@ -73,7 +71,6 @@ module mac_pair_mp4 #(
         .WRITE_DATA_WIDTH(REQ_W),
         .WR_DATA_COUNT_WIDTH(5)
     ) U_Request_Fifo (
-        .sleep(1'b0),
         .rst(~Rst_N),
         .wr_clk(Clk_Sys),
         .wr_en(Req_Fifo_Wr_En),
