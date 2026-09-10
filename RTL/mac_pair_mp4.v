@@ -65,7 +65,6 @@ module mac_pair_mp4 #(
     reg signed [K*K*Kernel_W-1:0] Kernel_Hold_Fast;
     reg [2:0] Slot;
     reg Running;
-    reg Finish_Pending;
     reg signed [Acc_W-1:0] Acc_A, Acc_B;
 
     wire [4:0] Idx0=(Slot*4)+0;
@@ -166,7 +165,6 @@ module mac_pair_mp4 #(
     always @(posedge Clk_Fast or negedge Rst_N) begin
         if (!Rst_N) begin
             Running <= 0;
-            Finish_Pending <= 0;
             Slot <= 0;
             Req_Seen <= 0;
             Acc_A <= 0;
@@ -182,11 +180,10 @@ module mac_pair_mp4 #(
             end
         end else if (!Fast_Locked) begin
             Running <= 0;
-            Finish_Pending <= 0;
             Req_Seen <= Req_M2;
             Fifo_WBin <= 0;
             Fifo_WGray <= 0;
-        end else if (New_Request && !Running && !Finish_Pending && !Fifo_Full) begin
+        end else if (New_Request && !Running && !Fifo_Full) begin
             Left_Hold_Fast <= Left_Hold_Sys;
             Right_Hold_Fast <= Right_Hold_Sys;
             Kernel_Hold_Fast <= Kernel_Hold_Sys;
@@ -210,19 +207,12 @@ module mac_pair_mp4 #(
                         Fifo_WBin <= Fifo_WBin_Next;
                         Fifo_WGray <= Fifo_WGray_Next;
                         Running <= 0;
-                    end else begin
-                        Finish_Pending <= 1;
                     end
+                    // If full, remain on Slot 4 and retry next fast cycle.
                 end
                 default: Running <= 0;
             endcase
             if (Slot!=4) Slot <= Slot+1'b1;
-        end else if (Finish_Pending && !Fifo_Full) begin
-            Result_A_Fifo[Fifo_WBin[FIFO_AW-1:0]] <= Acc_A;
-            Result_B_Fifo[Fifo_WBin[FIFO_AW-1:0]] <= Acc_B + E0 + E1;
-            Fifo_WBin <= Fifo_WBin_Next;
-            Fifo_WGray <= Fifo_WGray_Next;
-            Finish_Pending <= 0;
         end
     end
 
