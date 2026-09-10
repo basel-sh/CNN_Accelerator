@@ -90,7 +90,6 @@ module mac_pair_mp3 #(
         endcase
     end
 
-    // C+A*B starts each 3-product group; P+A*B continues it.
     wire [6:0] Dsp_Opmode=((Slot==3'd0)||(Slot==3'd3))?7'b0110101:7'b0100101;
     wire [29:0] A0={{22{1'b0}},Pix0}, A1={{22{1'b0}},Pix1}, A2={{22{1'b0}},Pix2};
     wire [17:0] B0={{10{Coef0[Kernel_W-1]}},Coef0}, B1={{10{Coef1[Kernel_W-1]}},Coef1}, B2={{10{Coef2[Kernel_W-1]}},Coef2};
@@ -143,17 +142,31 @@ module mac_pair_mp3 #(
         if(!Rst_N) begin Running<=0;Result_Pending<=0;Slot<=0;LHold<=0;RHold<=0;KHold<=0;Left_Part0<=0;Left_Part1<=0;Left_Part2<=0; end
         else if(!Fast_Locked) begin Running<=0;Result_Pending<=0;Slot<=0; end
         else begin
-            // First retire the previous result. If a prefetched request is
-            // active, slot 0 of that request is executed on this same edge.
+            // Retire the previous pair. If Running is still set, the DSPs
+            // simultaneously execute slot 0 of the prefetched next request.
             if(Result_Pending&&!Result_Full) begin
                 Result_Pending<=0;
                 if(Running) Slot<=1; else Slot<=0;
             end
-            if(Req_Rd_En) begin
+
+            if(Req_Rd_En && Running && (Slot==3'd5)) begin
+                // At this edge the DSP samples the old request's slot 5.
+                // FWFT data is loaded into the holds after the edge, so slot 0
+                // of the next request is presented to the DSP on the next edge.
                 LHold<=Req_Dout[K*K*Pixel_W-1:0];
                 RHold<=Req_Dout[2*K*K*Pixel_W-1:K*K*Pixel_W];
                 KHold<=Req_Dout[REQ_W-1:2*K*K*Pixel_W];
-                Running<=1; Slot<=0;
+                Running<=1;
+                Slot<=0;
+                Result_Pending<=1;
+            end else if(Req_Rd_En) begin
+                // Initial request acquisition: no DSP work is performed until
+                // the following fast edge, after the window registers settle.
+                LHold<=Req_Dout[K*K*Pixel_W-1:0];
+                RHold<=Req_Dout[2*K*K*Pixel_W-1:K*K*Pixel_W];
+                KHold<=Req_Dout[REQ_W-1:2*K*K*Pixel_W];
+                Running<=1;
+                Slot<=0;
             end else if(Running&&!Result_Pending) begin
                 case(Slot)
                     3'd0: Slot<=1;
@@ -161,7 +174,7 @@ module mac_pair_mp3 #(
                     3'd2: Slot<=3;
                     3'd3: begin Left_Part0<=P0[Acc_W-1:0]; Left_Part1<=P1[Acc_W-1:0]; Left_Part2<=P2[Acc_W-1:0]; Slot<=4; end
                     3'd4: Slot<=5;
-                    3'd5: begin Slot<=0; Result_Pending<=1; if(Req_Empty||Result_Full) Running<=0; end
+                    3'd5: begin Slot<=0;Result_Pending<=1;Running<=0; end
                     default: begin Slot<=0;Running<=0; end
                 endcase
             end
