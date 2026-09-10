@@ -44,11 +44,13 @@ slot 4 -> right[7..8]
 
 The MAC explicitly sign-extends the unsigned pixel and signed kernel operands before multiplication. This is required because Verilog multiplication expression sizing can otherwise truncate the product before assignment to a wider destination.
 
-### Fast/system CDC result path
+### CDC / transaction buffering
 
-The MP4 MAC uses a small **4-entry asynchronous result FIFO** between the 120 MHz MAC domain and the 20 MHz system/output domain. The FIFO uses Gray-coded read/write pointers with two-flop pointer synchronizers. This is required because a simple 1-bit completion toggle plus a 2-slot mailbox can overwrite an earlier result before the system clock domain consumes it.
+The 20 MHz front end can issue one output pair every 50 ns. A single request toggle is not a queue and can lose transactions when requests arrive faster than the fast-domain synchronizer/engine can observe them. The MP4 MAC therefore uses a **16-entry FWFT asynchronous request FIFO** between the 20 MHz and 120 MHz domains. The FIFO payload contains both 3x3 windows and the 3x3 kernel, and it is forced to distributed RAM to avoid adding a BRAM to the FoM resource term.
 
-The FIFO stores both 20-bit output accumulators as one result-pair entry. Under continuous operation, the consumer drains one pair per system cycle, preserving the required **2 output pixels/cycle** interface rate.
+The result path uses a separate small asynchronous result FIFO so completed output pairs cannot be overwritten while the result pointer crosses back into the 20 MHz domain.
+
+For production signoff, run Vivado `report_cdc` and inspect the generated CDC paths/constraints.
 
 ## Simulation: optimized candidate
 
