@@ -1,14 +1,32 @@
-# --- Vivado generated/build artifacts ---
-# Vivado/CNN_Accelerator.xpr IS tracked on purpose - open it directly on a
-# new machine instead of re-running Scripts/build.tcl. Only the bulky,
-# machine-specific, regenerable folders below are ignored.
-Vivado/*.cache/
-Vivado/*.hw/
-Vivado/*.ip_user_files/
-Vivado/*.runs/
-Vivado/*.sim/
-Vivado/*.srcs/
-Vivado/*.xpr.backup*
+# ==============================
+# Vivado generated/build artifacts
+# ==============================
+Vivado/**/*.cache/
+Vivado/**/*.hw/
+Vivado/**/*.ip_user_files/
+Vivado/**/*.runs/
+Vivado/**/*.sim/
+Vivado/**/*.srcs/
+Vivado/**/*.gen/
+Vivado/**/*.xpr.backup*
+Vivado_2px/**/*.cache/
+Vivado_2px/**/*.hw/
+Vivado_2px/**/*.ip_user_files/
+Vivado_2px/**/*.runs/
+Vivado_2px/**/*.sim/
+Vivado_2px/**/*.srcs/
+Vivado_2px/**/*.gen/
+Vivado_2px/**/*.xpr.backup*
+Vivado_2px_MP4/**/*.cache/
+Vivado_2px_MP4/**/*.hw/
+Vivado_2px_MP4/**/*.ip_user_files/
+Vivado_2px_MP4/**/*.runs/
+Vivado_2px_MP4/**/*.sim/
+Vivado_2px_MP4/**/*.srcs/
+Vivado_2px_MP4/**/*.gen/
+Vivado_2px_MP4/**/*.xpr.backup*
+
+# Vivado logs / generated reports
 *.jou
 *.log
 *.str
@@ -17,29 +35,38 @@ vivado*.log
 webtalk*.log
 webtalk*.jou
 
-# --- Simulation waveforms / work libraries ---
+# Generated simulation databases / waveforms
 *.wdb
 *.vcd
 *.fst
+*.wcfg
+*.pb
+*.wlf
 work/
 transcript
 modelsim.ini
 
-# --- Python ---
+# ==============================
+# Python
+# ==============================
 __pycache__/
 *.pyc
 .venv/
 venv/
 .pytest_cache/
 
-# --- OS / editor ---
+# ==============================
+# OS / editor / temporary lock files
+# ==============================
 .DS_Store
 Thumbs.db
 .vscode/*
 !.vscode/settings.json
+~$*
+*.tmp
+*.bak
 
-# --- Icarus Verilog local sim artifacts (Phase 9 quick-iteration flow) ---
+# Local simulation output
 sim/
 
-# --- Stray Vivado run-report artifact ---
 dfx_runtime.txt
