@@ -223,13 +223,46 @@ Source: `2026 SSCS_Egypt Competition Announcement.pdf` (repo root). Report due
 | 9 | Synthesis/implementation results | Done — `Reports/` |
 | 10 | Figure of Merit | Done — 1.10e-2 |
 
-## 11. Development history
+## 11. Timeline
 
-| Phase | Result |
-|---|---|
-| 1px baseline | 900/900 verified, then optimized 7396->842 LUT, 20966->758 FF, FoM 3.96e-4 -> 7.52e-3. Removed from the repo once superseded. Full log: `Documentation/OptimizationLog.md` |
-| 4-DSP / 120 MHz attempt | Functionally correct, WNS -4.338 ns, never closed timing. Abandoned. Full log: `Documentation/Aggressive2px.md` |
-| **Zero-DSP `top_2px.v` (current)** | LUT 1411, FF 638, DSP 0, BRAM 1.0, 0.120 W, WNS +35.076 ns, **FoM 1.10e-2** |
+- **Late July 2026** — Project scaffolding: folder structure, Python golden model,
+  kernel test files, initial RTL skeleton.
+- **September 5** — First working 1-pixel/cycle design close to competition-ready.
+  Killed an oversized 1024-deep output FIFO that was synthesizing as ~20,000 flip-flops
+  (it was sized for a full frame of results when the testbench only ever needed a couple
+  entries of slack), dropped the placeholder 100 MHz clock to 20 MHz (the FoM's Throughput
+  term is cycles-based, so a slower clock only helps the Power term), and fixed two
+  reset-hazard DRC violations on BlockRAM control pins. Result: LUT 7396 -> 842,
+  FF 20966 -> 758, FoM 3.96e-4 -> 7.52e-3 (~19x). Full log:
+  `Documentation/OptimizationLog.md`.
+- **September 6** — Explored real-board integration for that 1px design: an AXI4-Lite
+  wrapper (`axi_top_wrapper.v`) around it and a Zynq PS7 block design, plus scripts to
+  drop the PS7 clock for extra power savings. This never became part of the reported
+  FoM and was removed along with the 1px baseline once the 2px design replaced it.
+- **September 10** — Built the full 2-pixel/cycle front end (`controller_2px.v`,
+  `image_memory_2px.v`, `line_buffer_2px.v`, `window_generator_2px.v`) and two
+  competing MAC engines behind it: `mac_pair.v` (18 fabric multiplies, zero DSP, one
+  clock) and `mac_pair_mp4.v` (4 shared DSP48s time-multiplexed over a second,
+  120 MHz clock, needing async CDC FIFOs to get requests/results across). The DSP
+  version was simulated first and passed functionally, 900/900.
+- **September 11, morning** — Synthesized the 4-DSP version: it never closed timing
+  (WNS -4.338 ns on the 120 MHz domain — the DSP-output accumulation path plus the
+  CDC logic didn't fit in 8.333 ns), and FF ballooned to 1286 from the Gray-code
+  CDC pointer logic it needed. Its FoM (8.27e-3) was only ever provisional and never
+  a valid, reportable number.
+- **September 11, afternoon** — Synthesized `top_2px.v` + `mac_pair.v` instead: same
+  20 MHz clock as the 1px baseline, no DSPs, no second clock domain, no CDC logic —
+  just 18 products done fully in parallel in fabric. It closed timing at +35.076 ns,
+  the first real 2px/cycle result in this project. FoM: **1.10e-2**, +46.6% over the
+  1px baseline. Adopted as the final design.
+- **September 11, evening** — Repo cleanup: removed the 1px baseline (`RTL/top.v` and
+  its dependents, the `Vivado/` project folder), the AXI/board-bringup path, and the
+  abandoned 4-DSP attempt (`mac_pair_mp4.v`/`mac_pair_mp3.v`, the `Vivado_2px_MP4/`
+  project folder) entirely. **`Vivado_2px/` is now the only Vivado project folder in
+  the repo.** Reports consolidated from three separate folders into one
+  `Reports/{utilization,timing,power}/`. The reasoning behind every removed design is
+  kept, not deleted, in `Documentation/OptimizationLog.md` and
+  `Documentation/Aggressive2px.md`.
 
 ## 12. License
 
