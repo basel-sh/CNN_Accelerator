@@ -30,9 +30,9 @@ Pixel_W, Kernel_W, Img_Size = 8, 8, 32
 Quant_Img = load_image("Images/input.png", Size=(Img_Size, Img_Size), Pixel_Width=Pixel_W)
 write_mem_file(Quant_Img, "Images/input_32x32.mem", Pixel_W, Signed=False)
 
-Sobel_Vertical = np.array([[-1, 0, 1],
-                            [-2, 0, 2],
-                            [-1, 0, 1]], dtype=np.int64)
+Sobel_Vertical = np.array([[-1, -2, -1],
+                            [0, 0, 0],
+                            [1, 2, 1]], dtype=np.int64)
 write_mem_file(Sobel_Vertical, "Images/kernels/edge_3x3.mem", Kernel_W, Signed=True)
 
 Preview = cv2.resize(Quant_Img.astype(np.uint8), (Img_Size * 8, Img_Size * 8),

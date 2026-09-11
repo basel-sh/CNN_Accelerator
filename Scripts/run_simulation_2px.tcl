@@ -33,12 +33,12 @@ add_wave -radix hex {/tb_top_2px/Clk /tb_top_2px/Rst_N /tb_top_2px/Start /tb_top
 add_wave /tb_top_2px/Dut/*
 run all
 
-catch {file copy -force -- [file join $sim_run_dir "sim" "rtl_output_2px.mem"] \
-    [file join $repo_root "sim" "rtl_output_2px.mem"]}
+catch {file copy -force -- [file join $sim_run_dir "sim" "rtl_output.mem"] \
+    [file join $repo_root "sim" "rtl_output.mem"]}
 
 set wcfg_path [file join $repo_root "Vivado_2px" "tb_top_2px_waves.wcfg"]
 save_wave_config $wcfg_path
 close_sim
 cd $repo_root
 puts "run_simulation_2px.tcl: simulation complete."
-puts "Next: python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output_2px.mem --img-size 32 32 --k 3 --acc-width 20"
+puts "Next: python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20"

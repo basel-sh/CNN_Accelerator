@@ -49,7 +49,7 @@ Three steps, three tools, from the repo root.
 |---|---|---|
 | 1 | terminal | `python Python/prepare_stimulus.py` |
 | 2 | Vivado Tcl console | `cd {C:/Users/Xps/Desktop/CNN_Accelerator}` then `source Scripts/run_simulation_2px.tcl` |
-| 3 | terminal | `python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output_2px.mem --img-size 32 32 --k 3 --acc-width 20` |
+| 3 | terminal | `python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20` |
 
 Look for `Compared 900 output values.` and `RESULT: PASS`.
 
@@ -77,10 +77,9 @@ recreate it from scratch: `vivado -mode batch -source Scripts/build_2px.tcl`.
 | Command | What it does |
 |---|---|
 | `python Python/prepare_stimulus.py` | Resizes/quantizes `Images/input.png` to 32x32, writes `Images/input_32x32.mem` + a preview PNG, and writes the demo kernel to `Images/kernels/edge_3x3.mem` |
-| `python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output_2px.mem --img-size 32 32 --k 3 --acc-width 20` | Compares RTL sim output to the golden model, element by element |
-| same, with `--kernel Images/kernels/random_3x3_test2.mem` | Second-kernel regression (see step below — needs a testbench edit first) |
+| `python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20` | Compares RTL sim output to the golden model, element by element |
 | same, with `--relu` added | ReLU-on regression |
-| `python Python/mem_to_image.py` | Turns RTL output back into a viewable PNG. **Still hardcoded to `sim/rtl_output.mem`** — copy `sim/rtl_output_2px.mem` over that path first (`copy sim\rtl_output_2px.mem sim\rtl_output.mem` on Windows) |
+| `python Python/mem_to_image.py` | Turns RTL output back into a viewable PNG, reading `sim/rtl_output.mem` — the same filename `tb_top_2px.v` now writes, so no copy step is needed |
 
 ### Vivado Tcl console
 
@@ -89,7 +88,7 @@ already sit at the repo root.
 
 | Command | What it does |
 |---|---|
-| `source Scripts/run_simulation_2px.tcl` | Behavioral sim of `top_2px.v`, writes `sim/rtl_output_2px.mem` |
+| `source Scripts/run_simulation_2px.tcl` | Behavioral sim of `top_2px.v`, writes `sim/rtl_output.mem` |
 | `source Scripts/synthesize_2px.tcl` | Full synth + routed implementation, exports to `Reports/` |
 
 **The habit that matters most:** always run `run_simulation_2px.tcl` and confirm
@@ -97,22 +96,35 @@ already sit at the repo root.
 synthesis run that isn't backed by a fresh PASS wastes 20+ minutes if the RTL
 changed since the last verified sim.
 
-### Testing the second kernel / ReLU (not yet done for this design — see below)
+### Testing a different image or kernel
 
-Both are written into the repo but haven't been run through `top_2px.v` yet:
+The testbench always reads `Images/input_32x32.mem` and
+`Images/kernels/edge_3x3.mem` by fixed filename — there is only ever one
+image and one kernel file, so "testing another one" means overwriting their
+*contents*, not adding new files or editing the testbench.
 
+**New image:**
 ```
-# 1. Edit Testbench/tb_top_2px.v, change the kernel readmemh line to:
-$readmemh("Images/kernels/random_3x3_test2.mem", Kernel_Stim);
-
-# 2. Re-run:
+# 1. Replace Images/input.png with the new photo (same filename)
+python Python/prepare_stimulus.py
 source Scripts/run_simulation_2px.tcl
-
-# 3. Verify against the matching kernel:
-python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/random_3x3_test2.mem --rtl-output sim/rtl_output_2px.mem --img-size 32 32 --k 3 --acc-width 20
-
-# 4. Revert the readmemh line back to edge_3x3.mem when done.
+python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20
+python Python/mem_to_image.py
 ```
+
+**New kernel:** edit the coefficient array near the bottom of
+`Python/prepare_stimulus.py` (currently a vertical-Sobel edge detector),
+then run the same four commands above. Example — horizontal-edge Sobel:
+```python
+Sobel_Horizontal = np.array([[-1, -2, -1],
+                              [ 0,  0,  0],
+                              [ 1,  2,  1]], dtype=np.int64)
+write_mem_file(Sobel_Horizontal, "Images/kernels/edge_3x3.mem", Kernel_W, Signed=True)
+```
+
+Both have been run against `top_2px.v`: a second real photo and the
+horizontal-Sobel kernel above, each **900/900 bit-exact** — see §9 and
+§11. ReLU is the one case still not exercised through this design.
 
 For ReLU, before sourcing the sim script:
 ```tcl
@@ -131,10 +143,10 @@ Python (prepare_stimulus.py):
                                   (also writes kernels/edge_3x3.mem, vertical-Sobel)
 
 RTL (Vivado, run_simulation_2px.tcl):
-  input_32x32.mem + kernels/edge_3x3.mem --> sim/rtl_output_2px.mem
+  input_32x32.mem + kernels/edge_3x3.mem --> sim/rtl_output.mem
 
 Python (mem_to_image.py):
-  sim/rtl_output_2px.mem --> rtl_output_preview.png
+  sim/rtl_output.mem --> rtl_output_preview.png
 ```
 
 ## 6. Accelerator architecture
@@ -199,8 +211,9 @@ RTL Simulation (Testbench/tb_top_2px.v) ──▶ RTL Output ──▶ Compare (
 
 | Case | Result |
 |---|---|
-| Demo kernel (`edge_3x3.mem`), ReLU off | **900/900 outputs bit-exact** vs. the golden model |
-| Second kernel (`random_3x3_test2.mem`) | not yet run through this design — see §4 |
+| Demo kernel (vertical-Sobel `edge_3x3.mem`), ReLU off | **900/900 outputs bit-exact** vs. the golden model |
+| Alternate input photo, same kernel | **900/900 outputs bit-exact** |
+| Alternate kernel (horizontal-Sobel, overwritten into `edge_3x3.mem`) | **900/900 outputs bit-exact** |
 | ReLU on | not yet run through this design — see §4 |
 
 Full detail: `Documentation/VerificationResults.md`.
@@ -219,7 +232,7 @@ Source: `2026 SSCS_Egypt Competition Announcement.pdf` (repo root). Report due
 | 5 | Stride = 1 | Done |
 | 6 | Output precision: min. 16-bit signed | Done (20-bit) |
 | 7 | ReLU activation (bonus) | Done in RTL — regression against it still pending, see §4 |
-| 8 | Verified against a golden model | Done for the demo case; second kernel pending |
+| 8 | Verified against a golden model | Done — demo kernel, alternate kernel, and alternate input image all bit-exact |
 | 9 | Synthesis/implementation results | Done — `Reports/` |
 | 10 | Figure of Merit | Done — 1.10e-2 |
 
@@ -263,6 +276,28 @@ Source: `2026 SSCS_Egypt Competition Announcement.pdf` (repo root). Report due
   `Reports/{utilization,timing,power}/`. The reasoning behind every removed design is
   kept, not deleted, in `Documentation/OptimizationLog.md` and
   `Documentation/Aggressive2px.md`.
+- **September 11, later** — Closed the last loose end from the cleanup:
+  `tb_top_2px.v` was still writing `sim/rtl_output_2px.mem` while
+  `mem_to_image.py` was hardcoded to read `sim/rtl_output.mem`, which is why
+  every visual check needed a manual copy step. Renamed the testbench's
+  `$fopen` target (and `run_simulation_2px.tcl`'s copy-back logic) to
+  `sim/rtl_output.mem` directly, so the whole pipeline now uses one filename
+  end to end. Then extended verification beyond the single image/kernel pair
+  used for every result above: reran the full flow against a second, real
+  input photo (900/900 PASS), and against a second kernel — a horizontal-edge
+  Sobel filter, written by editing the coefficient array in
+  `Python/prepare_stimulus.py` (which overwrites `edge_3x3.mem`, since the
+  testbench always reads that one filename). The first attempt at the
+  horizontal kernel had a hand-typed sign error (`-2` entered as `2`) that
+  `verify.py` could not catch — the RTL and the golden model both read the
+  same mis-typed kernel file, so their outputs still matched each other
+  exactly. It only showed up because the output image still looked like
+  vertical-edge detection instead of horizontal; caught for certain by
+  dumping the kernel `.mem` file's hex content directly. Fixed, reran,
+  **900/900 bit-exact**. Take-away kept in
+  `Documentation/VerificationResults.md`: a golden-model PASS only proves the
+  RTL matches Python's *interpretation* of the stimulus files — it can't
+  catch a wrong stimulus file both sides agree on.
 
 ## 12. License
 

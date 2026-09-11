@@ -12,28 +12,33 @@
   **900/900 outputs bit-exact** vs. the Python golden model. This is the
   result recorded in `Documentation/Aggressive2px.md` and used for every
   synthesis run in `Reports/`.
+- **Alternate input photo**, same vertical-Sobel kernel — regenerated
+  `Images/input_32x32.mem` via `Python/prepare_stimulus.py` from a different
+  source photo — **900/900 outputs bit-exact**.
+- **Alternate kernel** — a horizontal-edge Sobel filter
+  (`[[-1,-2,-1],[0,0,0],[1,2,1]]`), written into `Images/kernels/edge_3x3.mem`
+  by editing the coefficient array in `Python/prepare_stimulus.py` and
+  re-running it — **900/900 outputs bit-exact**. See "Bugs found" below for
+  a mistake caught during this run.
 
 `Python/verify.py` performs the automated comparison and exits 0 (PASS) /
 1 (FAIL), suitable for CI.
 
 ## What's NOT yet verified for the current design
 
-Everything above uses the same one image/kernel pair. Two cases are written
-into the repo but not yet run through the current (`top_2px.v`) design:
-
-- **`Images/kernels/random_3x3_test2.mem`** — a second, unstructured signed
-  kernel. (The old baseline was tested against this in Icarus before it was
-  removed; the current design has not.)
 - **ReLU on.** `tb_top_2px.v` supports it via `-testplusarg RELU=1`, but it's
-  never actually been run that way in Vivado.
+  never actually been run that way in Vivado. Exact commands are in the root
+  `README.md` command reference; phase 15 of
+  `Documentation/DevelopmentRoadmap.md` tracks doing this before the report
+  is finalized.
 
-Neither testbench takes the kernel file as a runtime parameter — both
-hardcode `$readmemh("Images/kernels/edge_3x3.mem", ...)` — so running the
-second kernel means temporarily editing that one line in
-`Testbench/tb_top_2px.v`, re-simulating, and reverting it. Exact commands are
-in the root `README.md` command reference, phase 15 of
-`Documentation/DevelopmentRoadmap.md` tracks doing this before the report is
-finalized.
+The kernel and image are both single fixed-name files
+(`Images/kernels/edge_3x3.mem`, `Images/input_32x32.mem`) that
+`tb_top_2px.v` always reads by that name — "testing another kernel/image"
+means regenerating those files' *contents* via `Python/prepare_stimulus.py`,
+not editing the testbench. (An earlier, now-deleted second kernel file,
+`random_3x3_test2.mem`, needed a testbench edit to select a different
+`$readmemh` path — that approach no longer applies.)
 
 ## Bugs found and fixed along the way
 
@@ -51,3 +56,22 @@ design's line-buffer approach:
    assignments immediately after `@(posedge Clk)` — a same-edge race with the
    DUT's own posedge logic that non-deterministically dropped about half the
    writes. `tb_top_2px.v` drives all stimulus changes on `@(negedge Clk)`.
+3. `tb_top_2px.v` wrote its result to `sim/rtl_output_2px.mem` while
+   `Python/mem_to_image.py` was hardcoded to read `sim/rtl_output.mem` — a
+   naming split left over from when the `_2px` testbench replaced the
+   baseline one. Every visual check needed a manual copy between the two
+   names. Fixed by renaming the testbench's `$fopen` target (and
+   `Scripts/run_simulation_2px.tcl`'s copy-back step) to `sim/rtl_output.mem`
+   directly.
+4. Testing the horizontal-Sobel kernel above initially used a hand-typed
+   coefficient array with a sign error: `-2` was entered as `2`. `verify.py`
+   still reported **PASS**, because both the RTL and the Python golden model
+   read the *same* `edge_3x3.mem` file — they agreed with each other, just
+   against the wrong stimulus. The bug only surfaced because the rendered
+   output image still looked like vertical-edge detection; confirmed by
+   dumping the kernel `.mem` file's hex content directly. **A golden-model
+   PASS only proves RTL/golden agreement on whatever stimulus file both sides
+   were given — it cannot catch a stimulus file that's wrong in a way both
+   sides interpret identically.** Independently double-checking hand-entered
+   coefficients (or generating them programmatically instead of typing
+   sign-by-sign) is the mitigation.

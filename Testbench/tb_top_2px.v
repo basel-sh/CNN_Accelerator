@@ -65,7 +65,7 @@ module tb_top_2px;
         $readmemh("Images/input_32x32.mem", Image_Stim);
         $readmemh("Images/kernels/edge_3x3.mem", Kernel_Stim);
 
-        Out_File = $fopen("sim/rtl_output_2px.mem", "w");
+        Out_File = $fopen("sim/rtl_output.mem", "w");
         Capture_Count = 0;
         Pair_Count = 0;
 

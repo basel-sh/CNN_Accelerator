@@ -45,16 +45,17 @@ the removed `top`/`controller.v`) are gone along with the modules they tested.
 | `convolution.py` | Keeps generic conv math separate from the bit-accurate model | Reusable convolution helpers (NumPy reference) | `golden_model.py` |
 | `image_loader.py` | RTL and Python must consume/produce the exact same data | Load/quantize images, write RTL-readable stimulus files | `Images/`, `golden_model.py`, `Testbench/tb_top_2px.v` |
 | `image_generator.py` | Real-world images alone won't cover corner cases required for a rigorous FoM | Synthetic test images/kernels | `Images/`, `golden_model.py`, `verify.py` |
-| `verify.py` | Someone/something must issue the final PASS/FAIL | Compare golden vs RTL output automatically | `golden_model.py`, `sim/rtl_output_2px.mem` |
-| `prepare_stimulus.py` | One command should produce ready-to-simulate stimulus | Resize/quantize `input.png`, write the default kernel | `Images/` |
-| `mem_to_image.py` | A numeric PASS isn't the same as "looks right" | Turn RTL output back into a viewable PNG | `sim/rtl_output.mem` (see note below) |
+| `verify.py` | Someone/something must issue the final PASS/FAIL | Compare golden vs RTL output automatically | `golden_model.py`, `sim/rtl_output.mem` |
+| `prepare_stimulus.py` | One command should produce ready-to-simulate stimulus | Resize/quantize `input.png`, write the kernel coefficient array | `Images/` |
+| `mem_to_image.py` | A numeric PASS isn't the same as "looks right" | Turn RTL output back into a viewable PNG | `sim/rtl_output.mem` |
 | `utilities.py` | Avoids duplicating quantize/plot helpers across scripts | Shared fixed-point + Matplotlib helpers | all other `Python/` files |
 
-`mem_to_image.py` is still hardcoded to read `sim/rtl_output.mem` — a leftover
-from the baseline. For the current design's output, copy
-`sim/rtl_output_2px.mem` over that path before running it (see root
-`README.md`'s command reference), or update the script to point at the right
-file directly.
+`tb_top_2px.v` and `mem_to_image.py` both now use `sim/rtl_output.mem` — they
+used to disagree (`_2px` suffix vs. not), which meant copying the file
+manually before every visual check. To test a different kernel, edit the
+coefficient array near the bottom of `prepare_stimulus.py` and re-run it —
+it overwrites `Images/kernels/edge_3x3.mem`, the one filename the testbench
+ever reads, rather than adding a second kernel file.
 
 ## Images/
 
@@ -63,7 +64,7 @@ file directly.
 | `input.png` | A concrete, versioned test input everyone (Python + RTL) uses | Sample >=32x32 grayscale source image |
 | `input_32x32.mem` / `input_32x32_preview.png` | RTL and Python must consume/produce byte-identical stimulus | `$readmemh` hex export + human-viewable preview of `input.png` |
 | `rtl_output_preview.png` | Visual sanity check alongside the numeric PASS/FAIL | RTL output rendered as an image |
-| `kernels/` | Kernel is programmable — multiple kernels must be tested | Holds the KxK signed-8-bit coefficient sets, including a second kernel (`random_3x3_test2.mem`) for regression beyond the demo case |
+| `kernels/` | Kernel is programmable — multiple kernels must be tested | Holds the one `edge_3x3.mem` coefficient file the testbench reads; a different kernel means overwriting its contents via `prepare_stimulus.py`, not adding a second file |
 
 ## Reports/
 
@@ -102,7 +103,7 @@ functional one: this is the only Vivado project in the repo.
 | File | Why it exists | Responsibility | Interacts with |
 |---|---|---|---|
 | `build_2px.tcl` | Vivado project creation must be reproducible, not manual-only | Creates/refreshes `CNN_Accelerator_2px.xpr`, adds RTL/testbench/constraints sources | `RTL/`, `Testbench/`, `Vivado_2px/constraints_2px.xdc` |
-| `run_simulation_2px.tcl` | Simulation must be scriptable/repeatable | Launches XSim, runs `tb_top_2px.v`, dumps `sim/rtl_output_2px.mem` | `Testbench/`, `Python/verify.py` |
+| `run_simulation_2px.tcl` | Simulation must be scriptable/repeatable | Launches XSim, runs `tb_top_2px.v`, dumps `sim/rtl_output.mem` | `Testbench/`, `Python/verify.py` |
 | `synthesize_2px.tcl` | Synthesis/implementation/report export must be scriptable | Runs synth/impl, exports timing/utilization/power reports | `Vivado_2px/`, `Reports/` |
 | `run_simulation_iverilog.sh` | Removed — it compiled the old baseline's file list only (`RTL/ram.v`, `mac.v`, `top.v`, ...), none of which exist anymore | n/a | n/a |
 
