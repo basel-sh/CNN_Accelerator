@@ -1,33 +1,27 @@
 # Development Roadmap — CNN Convolution Accelerator
 
-Each phase lists its goal, primary deliverables, and the files it touches.
-Work through phases in order; later phases assume earlier ones are complete.
+This project went through two rounds: build a correct 1-pixel/cycle baseline
+first, then explore how to raise throughput without wrecking the Figure of
+Merit. The baseline and one throughput experiment (a 4-DSP, second-clock-domain
+design) were both eventually removed from the repo once the current design
+replaced them — their history stays in `Documentation/OptimizationLog.md` and
+`Documentation/Aggressive2px.md`.
 
 | Phase | Status | Name | Goal | Key files |
 |---|---|---|---|---|
-| 1 | DONE | Project Setup | Repository, folder structure, tooling, docs (this deliverable) | entire scaffold |
-| 2 | DONE | Python Golden Model | Bit-accurate reference convolution (unsigned in / signed kernel / signed>=16-bit out, optional ReLU) | `Python/golden_model.py`, `convolution.py`, `image_loader.py`, `image_generator.py`, `utilities.py` |
-| 3 | DONE | Memory Architecture | Define/size image, kernel, and generic RAM/FIFO primitives | `RTL/image_memory.v`, `kernel_memory.v`, `ram.v`, `fifo.v` |
-| 4 | DONE | Line Buffer | Implement N-1 row buffering for sliding-window reconstruction | `RTL/line_buffer.v` |
-| 5 | DONE | Window Generator | Assemble and shift the NxN window at stride 1 | `RTL/window_generator.v` |
-| 6 | DONE | MAC Unit | Signed x unsigned multiply-accumulate, >=16-bit signed output | `RTL/mac.v`, `Testbench/tb_mac.v` |
-| 7 | DONE | Controller FSM | Sequence kernel load, image streaming, ReLU, output handshake | `RTL/controller.v`, `Testbench/tb_controller.v` |
-| 8 | DONE | Top Integration | Wire all submodules into `top.v`; define output buffering | `RTL/top.v`, `output_buffer.v` |
-| 9 | DONE | Simulation | Full RTL simulation vs. golden model, automatic PASS/FAIL | `Testbench/tb_top.v`, `Python/verify.py`, `Scripts/run_simulation.tcl` |
-| 10 | TODO | Optimization | Pipeline for timing, tune MAC parallelism vs. resource usage | RTL modules, `Documentation/Architecture.md` (update) |
-| 11 | TODO | Synthesis | Vivado synthesis, utilization capture | `Vivado/`, `Scripts/synthesize.tcl`, `Reports/synthesis/`, `Reports/utilization/` |
-| 12 | TODO | Timing Closure | Constrain and close timing at target Fmax | `Vivado/constraints.xdc`, `Reports/timing/` |
-| 13 | TODO | Power Optimization | Implementation-stage power analysis and reduction | `Reports/power/` |
-| 14 | TODO | Final Report | Compute Figure of Merit, assemble slides/plots | `Presentation/`, all `Reports/` |
-
-See `Documentation/VerificationResults.md` for Phase 9 simulation evidence.
+| 1-9 | DONE (superseded) | Setup -> golden model -> 1px RTL -> simulation | First correct, verified design | removed baseline RTL; see `OptimizationLog.md` |
+| 10 | DONE (superseded) | 1px FoM optimization | Cut LUT/FF, fix DRC/reset hazards, settle on 20 MHz | `OptimizationLog.md` |
+| 11-13 | DONE (superseded) | 2px/cycle exploration | Try sharing DSPs over a fast second clock; it worked in sim but never closed timing | `Aggressive2px.md` |
+| 14 | **DONE — current design** | Zero-DSP `top_2px.v` adopted | Same 20 MHz clock as everything else, 18 fabric multiplies, zero DSP, zero CDC logic. Routed: LUT 1411, FF 638, DSP 0, BRAM 1.0, 0.120 W, WNS +35.076 ns, FoM 1.10e-2 | `RTL/top_2px.v`, `RTL/mac_pair.v`, `Reports/` |
+| 15 | TODO | Robustness pass | Verify the second kernel (`Images/kernels/random_3x3_test2.mem`) and ReLU-on through the Vivado flow, not just the demo edge-detect case | `Testbench/tb_top_2px.v`, `Python/verify.py` |
+| 16 | TODO | Final report | Assemble `Documentation/` + `Reports/` + `Presentation/` into the competition submission | `Presentation/`, all `Documentation/` |
 
 ## Notes
 
-- Phases 2 and 3 can proceed in parallel (Python golden model has no RTL
-  dependency).
-- Phase 9 (Simulation) is the hard verification gate: nothing proceeds to
-  Phase 11 (Synthesis) until `Python/verify.py` reports PASS across the test
-  image/kernel set generated in Phases 2 and 9.
-- Phases 10-13 are iterative: optimization may be revisited after seeing
-  timing/utilization/power reports.
+- The design in `RTL/` today is final for this competition cycle: one
+  architecture, one Vivado project (`Vivado_2px/`), one set of reports
+  (`Reports/`).
+- Phase 15 matters because every PASS/FAIL result recorded so far for the
+  current design used the same one demo image/kernel pair. See root
+  `README.md`'s command reference for exactly how to run the second-kernel
+  and ReLU-on checks.

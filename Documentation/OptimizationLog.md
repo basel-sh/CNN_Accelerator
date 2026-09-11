@@ -1,5 +1,12 @@
 # Optimization Log — Phase 10 (FoM optimization pass)
 
+**Status note (2026-09-11):** this document is a historical log of the 1-pixel/cycle
+`RTL/top.v` baseline's optimization pass. That baseline has since been removed from
+the repository, replaced by the 2-pixel/cycle, zero-DSP `RTL/top_2px.v` design (see
+`Documentation/Aggressive2px.md` section 9 and root `README.md`). Kept here because
+several of the fixes below (DRC reset-hazard fixes, the reasoning against forcing
+DSP48 use) are still the reasoning behind the current design's choices.
+
 Baseline (xc7z020clg400-1 / PYNQ-Z2, 100 MHz, post-implementation, 2026-09-05):
 LUT 7396, FF 20966, DSP 0, BRAM 0.5, Power 0.339 W -> FoM = 1/(0.339*(7396+50)) ~= 3.96e-4
 

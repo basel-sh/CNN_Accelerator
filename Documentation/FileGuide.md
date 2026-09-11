@@ -1,44 +1,60 @@
 # File Guide — Why Every File Exists
 
 This document explains, for every file/folder in the project, why it exists,
-its responsibility, and which files it interacts with. Nothing in the tree
-is unexplained. Status: RTL/Testbench/Python (Phases 1-9) are implemented;
-Vivado/Reports/Presentation content (Phases 10-14) is generated on your
-machine — see root `README.md`.
+its responsibility, and which files it interacts with. The repo holds a
+single design now — the 2 output-pixels/cycle, zero-DSP accelerator — after
+an earlier 1-pixel/cycle baseline and an abandoned 4-DSP variant were removed.
+Both are still described, for the record, in `Documentation/OptimizationLog.md`
+and `Documentation/Aggressive2px.md`.
 
 ## RTL/
 
-| File | Why it exists | Responsibility | Implemented later | Interacts with |
-|---|---|---|---|---|
-| `top.v` | Single entry point the FPGA (and testbench) instantiates | Wire together every submodule into the complete accelerator | Port list, module instantiations, top-level handshake | all RTL modules, `Testbench/tb_top.v`, `Vivado/constraints.xdc` |
-| `controller.v` | Convolution needs a sequencer; without one, memories/datapath don't know when to act | FSM for kernel load, image streaming, ReLU enable, output handshake | States listed in `Architecture.md` §5 | `top.v`, memories, line buffer, window generator, mac, output buffer |
-| `mac.v` | The actual convolution arithmetic must live somewhere reusable/testable in isolation | Signed x unsigned multiply, accumulate to signed >=16-bit | Multiplier, accumulator register, overflow handling | `window_generator.v`, `kernel_memory.v`, `controller.v`, `tb_mac.v` |
-| `line_buffer.v` | Sliding-window convolution over a streamed image needs row history without re-fetching memory | Store N-1 previous rows | Row-shifting registers/FIFOs, sized by N | `image_memory.v`, `window_generator.v`, `fifo.v`, `ram.v` |
-| `window_generator.v` | Bridges streamed pixels + line buffer taps into the NxN window the MAC needs | Assemble/shift the NxN window at stride 1 | Horizontal shift registers per row | `line_buffer.v`, `mac.v`, `controller.v` |
-| `kernel_memory.v` | Kernel must be programmable, not hard-coded, per competition spec | Store/serve signed 8-bit NxN coefficients, support reload | Write interface, coefficient array | `top.v`, `controller.v`, `mac.v`, `ram.v` |
-| `image_memory.v` | Input image (>=32x32) must be staged and streamed in a controlled order | Store/serve unsigned fixed-point pixels | Address generation, read port | `top.v`, `controller.v`, `line_buffer.v`, `ram.v` |
-| `output_buffer.v` | Decouples MAC production timing from output consumption; hosts optional ReLU | Buffer/stream results, optional ReLU clamp | FIFO instantiation, ReLU logic | `mac.v`, `controller.v`, `top.v`, `fifo.v` |
-| `ram.v` | Every memory module needs a common, synthesis-friendly storage primitive | Generic parameterizable sync RAM | Port width/depth params, BRAM inference pattern | `image_memory.v`, `kernel_memory.v`, `line_buffer.v` |
-| `fifo.v` | Elastic buffering is needed in more than one place (line buffer, output) | Generic parameterizable sync FIFO | Read/write pointers, full/empty flags | `line_buffer.v`, `output_buffer.v` |
+| File | Why it exists | Responsibility | Interacts with |
+|---|---|---|---|
+| `top_2px.v` | Single entry point the FPGA (and testbench) instantiates | Wire together every submodule into the complete accelerator, apply ReLU | all RTL modules below, `Testbench/tb_top_2px.v`, `Vivado_2px/constraints_2px.xdc` |
+| `controller_2px.v` | Convolution needs a sequencer; without one, memories/datapath don't know when to act | FSM for kernel load, image streaming (2 px/cycle addressing), pair-valid handshake | `top_2px.v`, `image_memory_2px.v`, `line_buffer_2px.v`, `window_generator_2px.v` |
+| `mac_pair.v` | The actual convolution arithmetic, sized for 2 outputs/cycle with zero DSPs | 18 fabric multiplies (2x9), registered products, balanced adder tree per lane | `window_generator_2px.v`, `kernel_memory.v`, `top_2px.v` |
+| `line_buffer_2px.v` | Sliding-window convolution over a streamed image needs row history without re-fetching memory, doubled for two pixel lanes | Store K-1 previous rows for both lanes | `image_memory_2px.v`, `window_generator_2px.v` |
+| `window_generator_2px.v` | Bridges streamed pixel pairs + line buffer taps into the two overlapping KxK windows `mac_pair.v` needs | Assemble/shift two KxK windows at stride 1, one column apart | `line_buffer_2px.v`, `mac_pair.v`, `controller_2px.v` |
+| `kernel_memory.v` | Kernel must be programmable, not hard-coded, per competition spec | Store/serve signed 8-bit KxK coefficients, support reload | `top_2px.v`, `controller_2px.v`, `mac_pair.v` |
+| `image_memory_2px.v` | Input image (>=32x32) must be staged and streamed two pixels/cycle | Store the frame in one dual-read-port Block RAM | `top_2px.v`, `controller_2px.v`, `line_buffer_2px.v` |
+
+Everything else that used to live in `RTL/` — `top.v`, `mac.v`, `controller.v`,
+`image_memory.v`, `line_buffer.v`, `window_generator.v`, `output_buffer.v`,
+`ram.v`, `fifo.v` (the 1px baseline), `top_2px_mp4.v`, `mac_pair_mp4.v`,
+`mac_pair_mp3.v`, `mac_pair_mp3_fixed.v`, `clock_5x.v` (the abandoned 4-DSP
+variant), and `axi_top_wrapper.v` (an unfinished Zynq/AXI board-bringup
+wrapper for the old baseline) — has been removed. Their reasoning is preserved
+in `Documentation/OptimizationLog.md` and `Documentation/Aggressive2px.md`.
 
 ## Testbench/
 
-| File | Why it exists | Responsibility | Implemented later | Interacts with |
-|---|---|---|---|---|
-| `tb_top.v` | End-to-end correctness can only be proven at the system level | Drive `top.v` with golden-model stimulus, dump RTL output | Stimulus loading, clock/reset gen, result dump | `RTL/top.v`, `Python/verify.py`, `Images/` |
-| `tb_controller.v` | FSM bugs are easiest to isolate without the full datapath attached | Verify FSM transitions/timing standalone | State-checking assertions | `RTL/controller.v` |
-| `tb_mac.v` | Arithmetic correctness (signedness, width, rounding) must be nailed down before integration | Verify MAC math against reference vectors | Reference vector application/checking | `RTL/mac.v`, `Python/golden_model.py` |
+| File | Why it exists | Responsibility | Interacts with |
+|---|---|---|---|
+| `tb_top_2px.v` | End-to-end correctness can only be proven at the system level | Drive `top_2px.v` with golden-model stimulus, dump both result lanes in raster order, optional `-testplusarg RELU=1` | `RTL/top_2px.v`, `Python/verify.py`, `Images/` |
+
+The old `tb_top.v`, `tb_controller.v`, `tb_mac.v` (unit tests for the removed
+baseline modules) and the `Testbench/sv/` UVM-style environment (built around
+the removed `top`/`controller.v`) are gone along with the modules they tested.
 
 ## Python/
 
-| File | Why it exists | Responsibility | Implemented later | Interacts with |
-|---|---|---|---|---|
-| `golden_model.py` | Competition requires golden-model verification | Bit-accurate reference convolution | Quantization-matched convolution routine | `convolution.py`, `image_loader.py`, `verify.py` |
-| `convolution.py` | Keeps generic conv math separate from the bit-accurate model | Reusable convolution helpers (e.g. NumPy reference) | `convolve2d` and stride/padding helpers | `golden_model.py` |
-| `image_loader.py` | RTL and Python must consume/produce the exact same data | Load/quantize images, write RTL-readable stimulus files | OpenCV load, quantize, `$readmemh` export | `Images/`, `golden_model.py`, `Testbench/tb_top.v` |
-| `image_generator.py` | Real-world images alone won't cover corner cases required for a rigorous FoM | Synthetic test images/kernels (edge cases) | Pattern + kernel generators | `Images/`, `golden_model.py`, `verify.py` |
-| `verify.py` | Someone/something must issue the final PASS/FAIL | Compare golden vs RTL output automatically | Parsing + comparison + reporting | `golden_model.py`, `Testbench/tb_top.v` output, `Scripts/run_simulation.tcl` |
-| `utilities.py` | Avoids duplicating quantize/plot helpers across scripts | Shared fixed-point + Matplotlib helpers | `quantize()`, `plot_image()` | all other Python/ files |
+| File | Why it exists | Responsibility | Interacts with |
+|---|---|---|---|
+| `golden_model.py` | Competition requires golden-model verification | Bit-accurate reference convolution | `convolution.py`, `image_loader.py`, `verify.py` |
+| `convolution.py` | Keeps generic conv math separate from the bit-accurate model | Reusable convolution helpers (NumPy reference) | `golden_model.py` |
+| `image_loader.py` | RTL and Python must consume/produce the exact same data | Load/quantize images, write RTL-readable stimulus files | `Images/`, `golden_model.py`, `Testbench/tb_top_2px.v` |
+| `image_generator.py` | Real-world images alone won't cover corner cases required for a rigorous FoM | Synthetic test images/kernels | `Images/`, `golden_model.py`, `verify.py` |
+| `verify.py` | Someone/something must issue the final PASS/FAIL | Compare golden vs RTL output automatically | `golden_model.py`, `sim/rtl_output_2px.mem` |
+| `prepare_stimulus.py` | One command should produce ready-to-simulate stimulus | Resize/quantize `input.png`, write the default kernel | `Images/` |
+| `mem_to_image.py` | A numeric PASS isn't the same as "looks right" | Turn RTL output back into a viewable PNG | `sim/rtl_output.mem` (see note below) |
+| `utilities.py` | Avoids duplicating quantize/plot helpers across scripts | Shared fixed-point + Matplotlib helpers | all other `Python/` files |
+
+`mem_to_image.py` is still hardcoded to read `sim/rtl_output.mem` — a leftover
+from the baseline. For the current design's output, copy
+`sim/rtl_output_2px.mem` over that path before running it (see root
+`README.md`'s command reference), or update the script to point at the right
+file directly.
 
 ## Images/
 
@@ -46,52 +62,63 @@ machine — see root `README.md`.
 |---|---|---|
 | `input.png` | A concrete, versioned test input everyone (Python + RTL) uses | Sample >=32x32 grayscale source image |
 | `input_32x32.mem` / `input_32x32_preview.png` | RTL and Python must consume/produce byte-identical stimulus | `$readmemh` hex export + human-viewable preview of `input.png` |
-| `rtl_output_preview.png` | Visual sanity check alongside the numeric PASS/FAIL | `sim/rtl_output.mem` rendered as an image |
-| `kernels/` | Kernel is programmable — multiple kernels must be tested | Holds the NxN signed-8-bit coefficient sets |
+| `rtl_output_preview.png` | Visual sanity check alongside the numeric PASS/FAIL | RTL output rendered as an image |
+| `kernels/` | Kernel is programmable — multiple kernels must be tested | Holds the KxK signed-8-bit coefficient sets, including a second kernel (`random_3x3_test2.mem`) for regression beyond the demo case |
 
 ## Reports/
 
-`synthesis/`, `timing/`, `utilization/`, `power/` each exist because the
-competition explicitly requires synthesis, timing, and power reports, plus
-utilization is a named scoring criterion — separating them avoids one messy
-folder and matches how the reports are exported from Vivado (Phases 11-13).
+`utilization/`, `timing/`, `power/` hold the routed implementation reports for
+the current (and only) design, exported by `Scripts/synthesize_2px.tcl`. See
+`Reports/README.md` for the final numbers.
 
-## Vivado/
+## Vivado_2px/
 
 | File | Why it exists | Responsibility |
 |---|---|---|
-| `CNN_Accelerator.xpr` | Vivado's own project file — tracked in Git so a fresh clone opens directly | Regenerable via `Scripts/build.tcl` if ever deleted |
-| `constraints.xdc` | Timing closure and correct board I/O require constraints | Clock definition, pin assignments, exceptions |
-| `tb_top_waves.wcfg` | A useful default waveform layout should open automatically | Saved/refreshed each `Scripts/run_simulation.tcl` run |
+| `CNN_Accelerator_2px.xpr` | Vivado's own project file — tracked in Git so a fresh clone opens directly | Regenerable via `Scripts/build_2px.tcl` if ever deleted |
+| `constraints_2px.xdc` | Timing closure requires constraints | Single 20 MHz clock definition, I/O delays, false path on `Rst_N` |
 
-## Presentation/
-
-Holds the final competition deliverable (slides, diagrams, result plots),
-kept separate from technical `Reports/` because it's a curated summary, not
-raw tool output.
+The project/folder keeps its `_2px` name rather than being renamed to
+`Vivado`/`CNN_Accelerator.xpr` — Verilog module names and file paths are
+referenced directly inside the `.xpr` project XML, and there's no way to
+validate a rename here without Vivado open. It's a cosmetic mismatch, not a
+functional one: this is the only Vivado project in the repo.
 
 ## Documentation/
 
 | File | Why it exists | Responsibility |
 |---|---|---|
-| `Architecture.md` | Design decisions must be written down before coding starts | High-level architecture, dataflow, FSM, memory hierarchy |
-| `DevelopmentRoadmap.md` | A 14-phase project needs an explicit, ordered plan | Phase-by-phase goals and file ownership |
-| `CompetitionRequirements.md` | Every scored requirement must be traceable to a design element | Requirement-to-file/phase mapping |
+| `Architecture.md` | Design decisions must be written down | High-level architecture, dataflow, FSM, memory hierarchy of the current design |
+| `DevelopmentRoadmap.md` | An explicit, ordered project plan | Phase-by-phase goals and file ownership |
+| `CompetitionRequirements.md` | Every scored requirement must be traceable to a design element | Requirement-to-file mapping |
+| `PerformanceResults.md` | The FoM and its inputs must be computed and justified once, correctly | Fmax, FoM, precision justification |
+| `VerificationResults.md` | Correctness claims need evidence, not just "it passed" | Testbench results, bugs found and fixed |
+| `OptimizationLog.md` | How the baseline went from unusable to competitive is worth keeping | 1px-baseline optimization history (baseline itself now removed) |
+| `Aggressive2px.md` | How the final 2px design was chosen over the DSP-sharing alternative is worth keeping | 2px design-space exploration, including the abandoned 4-DSP attempt |
 | `FileGuide.md` | This file — nothing in the tree should be a mystery | Explains every file's purpose/responsibility/interactions |
 
 ## Scripts/
 
 | File | Why it exists | Responsibility | Interacts with |
 |---|---|---|---|
-| `build.tcl` | Vivado project creation must be reproducible, not manual-only | Creates/refreshes `CNN_Accelerator.xpr`, adds RTL/testbench/constraints sources | `RTL/`, `Testbench/`, `Vivado/constraints.xdc` |
-| `run_simulation.tcl` | Simulation must be scriptable/repeatable (batch or CI) | Launches simulator, runs `tb_top.v`, dumps results | `Testbench/`, `Python/verify.py` |
-| `synthesize.tcl` | Synthesis/implementation/report export must be scriptable | Runs synth/impl, exports timing/utilization/power reports | `Vivado/`, `Reports/` |
+| `build_2px.tcl` | Vivado project creation must be reproducible, not manual-only | Creates/refreshes `CNN_Accelerator_2px.xpr`, adds RTL/testbench/constraints sources | `RTL/`, `Testbench/`, `Vivado_2px/constraints_2px.xdc` |
+| `run_simulation_2px.tcl` | Simulation must be scriptable/repeatable | Launches XSim, runs `tb_top_2px.v`, dumps `sim/rtl_output_2px.mem` | `Testbench/`, `Python/verify.py` |
+| `synthesize_2px.tcl` | Synthesis/implementation/report export must be scriptable | Runs synth/impl, exports timing/utilization/power reports | `Vivado_2px/`, `Reports/` |
+| `run_simulation_iverilog.sh` | Removed — it compiled the old baseline's file list only (`RTL/ram.v`, `mac.v`, `top.v`, ...), none of which exist anymore | n/a | n/a |
+
+Everything else that used to live in `Scripts/` — `build.tcl`,
+`run_simulation.tcl`, `synthesize.tcl` (the 1px baseline), `build_2px_mp4.tcl`,
+`run_simulation_2px_mp4.tcl`, `synthesize_2px_mp4.tcl` (the abandoned 4-DSP
+variant), and `build_axi_bd.tcl`/`lower_apu_clk.tcl`/`lower_fclk.tcl`/
+`optimize_design.tcl`/`write_bitstream_pre.tcl` (an unfinished Zynq board
+bring-up path for the old baseline) — has been removed along with the design
+they targeted.
 
 ## Root files
 
 | File | Why it exists | Responsibility |
 |---|---|---|
 | `.gitignore` | Keeps generated/large/machine-specific files out of Git | Excludes Vivado build artifacts, sim waveforms, `__pycache__`, etc. |
-| `README.md` | First thing anyone (teammate, judge) reads | Overview, setup, build/sim/verify/synth flow, roadmap summary |
+| `README.md` | First thing anyone (teammate, judge) reads | Overview, setup, build/sim/verify/synth flow, command reference |
 | `requirements.txt` | Python environment must be reproducible | Pinned dependency versions |
 | `LICENSE` | Public GitHub repos should state usage terms | Project license |

@@ -1,57 +1,53 @@
-# Verification Results — Phase 9 (Simulation)
+# Verification Results
 
-Status as of this run: **Phases 2-9 implemented and passing.** Phases
-10-14 (optimization, Vivado synthesis/timing/power, final report) are still
-pending and require the Vivado GUI/toolchain — see "What's left" below.
-Naming: all signals below use the `First_Second` convention (root
-`README.md` §6) — this doc was refreshed after that rename; the RTL logic
-itself did not change and 900/900 outputs are still bit-exact.
+## What's verified
 
-## What was implemented and run
+- **Golden model:** `convolution.py`, `golden_model.py`, `image_loader.py`,
+  `image_generator.py`, `utilities.py` — unsigned pixel / signed 8-bit kernel /
+  signed 20-bit accumulator, valid convolution, stride 1, optional ReLU.
+- **RTL:** `kernel_memory.v`, `image_memory_2px.v`, `line_buffer_2px.v`,
+  `window_generator_2px.v`, `mac_pair.v`, `controller_2px.v`, `top_2px.v`.
+- **System-level (`tb_top_2px.v`, Vivado XSim, 32x32 image, 3x3 kernel):**
+  the vertical-Sobel demo kernel (`edge_3x3.mem`), ReLU off —
+  **900/900 outputs bit-exact** vs. the Python golden model. This is the
+  result recorded in `Documentation/Aggressive2px.md` and used for every
+  synthesis run in `Reports/`.
 
-- **Phase 2 (Python Golden Model):** `convolution.py`, `golden_model.py`,
-  `image_loader.py`, `image_generator.py`, `utilities.py` are fully
-  implemented (unsigned pixel / signed 8-bit kernel / signed 20-bit
-  accumulator, valid convolution, stride 1, optional ReLU). Verified against
-  hand-computed values.
-- **Phases 3–8 (RTL):** `ram.v`, `fifo.v`, `image_memory.v`,
-  `kernel_memory.v`, `line_buffer.v`, `window_generator.v`, `mac.v`,
-  `controller.v`, `output_buffer.v`, `top.v` are fully implemented (see
-  `Architecture.md` for the finalized pipeline-latency design).
-- **Phase 9 (Simulation):** Since Vivado isn't available in this automated
-  environment, RTL correctness was verified by installing **Icarus Verilog**
-  and running the testbenches directly:
-  - `tb_mac.v` — 3/3 hand-computed vectors passed.
-  - `tb_controller.v` — address sequencing (row-major, no gaps) and
-    valid-window count both verified exact on an 8x8/K=3 case.
-  - `tb_top.v` — full system test, 32x32 image, 3x3 kernel, run twice:
-    1. Edge-detect kernel, ReLU off — **900/900 outputs bit-exact** vs.
-       the Python golden model.
-    2. Random signed kernel, ReLU on — **900/900 outputs bit-exact**.
+`Python/verify.py` performs the automated comparison and exits 0 (PASS) /
+1 (FAIL), suitable for CI.
 
-  `Python/verify.py` performs the automated comparison and exits 0 (PASS) /
-  1 (FAIL), suitable for CI.
+## What's NOT yet verified for the current design
 
-## Bugs found and fixed during this pass
+Everything above uses the same one image/kernel pair. Two cases are written
+into the repo but not yet run through the current (`top_2px.v`) design:
 
-1. **`line_buffer.v` initial design** used a shared read/write address trick
-   on `ram.v` (a common BRAM line-buffer technique) that Icarus Verilog
-   simulated inconsistently for same-cycle same-address access. Replaced
-   with a plain flip-flop shift-register delay chain — functionally
-   identical, unambiguous in any simulator/synthesizer. Re-introducing a
-   BRAM-backed version (lower FF count) is a tracked Phase 10 item, using a
-   true dual-port RAM with distinct, never-simultaneously-equal addresses.
-2. **`tb_top.v` preload loops** changed stimulus signals (`Img_We`,
-   `Img_Waddr`, ...) using blocking assignments immediately after
-   `@(posedge Clk)` — a classic testbench/DUT same-edge race, non-
-   deterministically dropping about half the writes. Fixed by driving all
-   stimulus changes on `@(negedge Clk)`, safely away from the DUT's own
-   `@(posedge Clk)` logic.
+- **`Images/kernels/random_3x3_test2.mem`** — a second, unstructured signed
+  kernel. (The old baseline was tested against this in Icarus before it was
+  removed; the current design has not.)
+- **ReLU on.** `tb_top_2px.v` supports it via `-testplusarg RELU=1`, but it's
+  never actually been run that way in Vivado.
 
-## What's left (needs the Vivado GUI, on your machine)
+Neither testbench takes the kernel file as a runtime parameter — both
+hardcode `$readmemh("Images/kernels/edge_3x3.mem", ...)` — so running the
+second kernel means temporarily editing that one line in
+`Testbench/tb_top_2px.v`, re-simulating, and reverting it. Exact commands are
+in the root `README.md` command reference, phase 15 of
+`Documentation/DevelopmentRoadmap.md` tracks doing this before the report is
+finalized.
 
-- Phase 10 — Optimization (pipeline for timing/resources, BRAM line buffer).
-- Phase 11 — Synthesis (`Scripts/build.tcl` + `Scripts/synthesize.tcl`).
-- Phase 12 — Timing closure (`Vivado/constraints.xdc`).
-- Phase 13 — Power analysis.
-- Phase 14 — Final report / FoM.
+## Bugs found and fixed along the way
+
+Carried over from the original (now-removed) baseline's development, since
+the fixes apply to shared modules (`kernel_memory.v`) or shaped the current
+design's line-buffer approach:
+
+1. An early line-buffer design used a shared read/write address trick on a
+   generic RAM primitive that simulated inconsistently for same-cycle
+   same-address access in Icarus Verilog. `line_buffer_2px.v` uses a plain
+   flip-flop shift-register delay chain instead — functionally unambiguous in
+   any simulator/synthesizer, at the cost of more FFs than a BRAM-backed
+   version would use.
+2. An early testbench preload loop changed stimulus signals using blocking
+   assignments immediately after `@(posedge Clk)` — a same-edge race with the
+   DUT's own posedge logic that non-deterministically dropped about half the
+   writes. `tb_top_2px.v` drives all stimulus changes on `@(negedge Clk)`.

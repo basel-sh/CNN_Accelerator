@@ -1,55 +1,40 @@
 # Reports
 
-Every synthesis/implementation run in this project lands here, one folder per
-design variant, all built the same way: `report_utilization`, `report_timing_summary`,
-and `report_power` exported straight from the routed (`impl_1`, post-route) design in
-Vivado, plus the synth-stage utilization/timing where a script saved it too.
+Routed implementation reports for the current design (`RTL/top_2px.v`, 2
+output pixels/cycle, zero DSPs), exported from Vivado via
+`Scripts/synthesize_2px.tcl` — `report_utilization`, `report_timing_summary`,
+`report_power`, run against the post-route (`impl_1`) design.
 
-| Folder | Design | Branch | Script | Status |
-|---|---|---|---|---|
-| `1px_baseline/` | `top.v` — 1 output pixel/cycle, 0 DSP | `master` | reports captured manually from the Vivado GUI (`Scripts/synthesize.tcl` is still a placeholder — see note below) | final, reported |
-| `2px/` | `top_2px.v` — 2 output pixels/cycle, 0 DSP, single 20 MHz clock | `aggressive-2px-fom` | `Scripts/synthesize_2px.tcl` | final, reported — **best FoM** |
-| `2px_mp4/` | `top_2px_mp4.v` — 2 output pixels/cycle, 4 DSP, 120 MHz fast clock | `aggressive-2px-fom` | `Scripts/synthesize_2px_mp4.tcl` | abandoned — timing not closed, kept for the record |
+| Folder | Contents |
+|---|---|
+| `utilization/` | `utilization_synth.txt` (post-synthesis), `utilization_impl.txt` (post-route, the one that's reported) |
+| `timing/` | `timing_synth.txt`, `timing_impl.txt` |
+| `power/` | `power_impl.txt` |
 
-## Results summary
+## Final numbers
 
-`FoM = Throughput / (Power x (LUT + 50*DSP + 100*BRAM))`, Throughput in output pixels/cycle.
+| Metric | Value |
+|---|---|
+| Throughput | 2 output pixels/cycle |
+| LUT | 1411 |
+| FF | 638 |
+| DSP | 0 |
+| BRAM | 1.0 |
+| Power | 0.120 W (dynamic 0.049 W + static 0.070 W) |
+| WNS | +35.076 ns @ 50 ns (20 MHz) — all constraints met |
+| FoM | **1.10e-2** |
 
-| Design | Throughput | LUT | FF | DSP | BRAM | Power (W) | WNS (ns) | FoM |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `1px_baseline` | 1 | 842 | 758 | 0 | 0.5 | 0.149 | +35.538 | 7.52e-3 |
-| `2px_mp4` (abandoned) | 2 | 738 | 1286 | 4 | 1.0 | 0.233 | **-4.338 (FAILED)** | 8.27e-3 — not valid, timing not closed |
-| `2px` (adopted) | 2 | 1411 | 638 | 0 | 1.0 | 0.120 | **+35.076 (PASS)** | **1.10e-2** |
-
-`2px` is the number to report: it's the only 2 px/cycle design that actually closes
-timing, and it beats the 1px baseline by +46.6%. Full writeup and the phases that led
-here: `Documentation/OptimizationLog.md` (1px cleanup) and `Documentation/Aggressive2px.md`
-(2px experiments, section 9 has the final numbers).
-
-## Why `2px_mp4/` still exists
-
-`top_2px_mp4.v` shares 4 DSP48s across a 120 MHz second clock to compute all 18
-products/pair. It's functionally correct in simulation but the routed accumulator path
-doesn't fit in 8.333 ns (WNS = -4.338 ns), so its FoM was only ever provisional. It's
-kept as a documented dead end, not deleted, so the reasoning doesn't have to be redone
-later. `mac_pair_mp3.v` (a 3-DSP follow-up attempt) is in the same state — written,
-never finished or re-verified.
+Full derivation and the design-space history that led here (an earlier 1px
+baseline and an abandoned 4-DSP variant, both removed from the repo):
+`Documentation/PerformanceResults.md`, `Documentation/OptimizationLog.md`,
+`Documentation/Aggressive2px.md`.
 
 ## Regenerating these reports
 
-```
-# 1px baseline (master) — Vivado GUI: open Vivado/CNN_Accelerator.xpr, run
-# Synthesis -> Implementation -> Report Utilization / Timing Summary / Power,
-# export into Reports/1px_baseline/. (Scripts/synthesize.tcl is a TODO placeholder,
-# these were captured by hand.)
+Confirm 900/900 in simulation first — see the root `README.md` command
+reference — then, in the Vivado Tcl console:
 
-# 2px, zero-DSP (adopted) — from the repo root, in the Vivado Tcl console:
+```
 cd {C:/Users/Xps/Desktop/CNN_Accelerator}
 source Scripts/synthesize_2px.tcl
-
-# 2px, 4-DSP MP4 (abandoned, kept for reference only):
-source Scripts/synthesize_2px_mp4.tcl
 ```
-
-Always confirm 900/900 in simulation before trusting a synthesis run — see the root
-`README.md` "Verification" section for the exact commands.

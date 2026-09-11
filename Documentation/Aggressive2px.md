@@ -1,6 +1,16 @@
 # Aggressive 2-pixel/cycle FoM experiment
 
-This branch preserves the verified 1-pixel/cycle implementation in `RTL/top.v` and explores higher-FoM 2-pixel/cycle architectures. `master` is intentionally untouched.
+**Status note (2026-09-11):** this document is a historical log. The 1-pixel/cycle
+`RTL/top.v` baseline it refers to below, and the 4-DSP/MP4/MP3 attempt described in
+sections 1-8, have both been removed from the repository — only the zero-DSP
+`top_2px.v` + `mac_pair.v` design from section 9 remains. File paths and branch
+references below (`master`, `RTL/top.v`) describe the repo state at the time this
+was written, not the current tree; see root `README.md` and `Documentation/FileGuide.md`
+for what actually exists now.
+
+This document originally described a separate branch that preserved the verified
+1-pixel/cycle implementation in `RTL/top.v` and explored higher-FoM 2-pixel/cycle
+architectures on top of it.
 
 ## 1. Architecture and correctness baseline
 
