@@ -255,3 +255,45 @@ P * (LUT + 250) < 265.816
 ```
 
 This is the new optimization target for the MP3 implementation.
+
+## 9. Final result — MP3/MP4 abandoned, zero-DSP `top_2px` adopted (2026-09-11)
+
+The MP3 DSP48E1-accumulator idea from Section 5 was never finished: `mac_pair_mp3_fixed.v`
+currently just forwards to the old MP4 engine (`mac_pair_mp4.v`) instead of the real
+3-DSP datapath in `mac_pair_mp3.v`, and `mac_pair_mp3.v` was never re-synthesized or
+re-verified on its own. Both files stay in the repo as a record of the attempt, but
+neither one is part of the accepted design.
+
+Instead, `top_2px.v` + `mac_pair.v` — the single-clock, zero-DSP, fully-parallel
+18-multiplier design that was already sitting in this branch unused — was synthesized
+for the first time via `Scripts/synthesize_2px.tcl` (routed, `xc7a35tcpg236-1`). It
+sidesteps the timing problem instead of solving it: no 120 MHz fast clock, no CDC FIFO,
+no DSP, so there is nothing left that can violate WNS.
+
+Routed result (`Reports/1px_baseline/` vs `Reports/2px/`):
+
+| Metric | 1px baseline | 2px `top_2px` (adopted) |
+|---|---:|---:|
+| Throughput | 1 px/cycle | 2 px/cycle |
+| LUT | 842 | 1411 |
+| FF | 758 | 638 |
+| DSP | 0 | 0 |
+| BRAM | 0.5 | 1.0 |
+| Power | 0.149 W | 0.120 W (dynamic 0.049 + static 0.070) |
+| WNS @ 20 MHz | +35.538 ns | **+35.076 ns — all constraints met** |
+
+```
+FoM = 2 / (0.120 x (1411 + 0 + 100)) = 2 / 181.32 = 1.10e-2
+```
+
+vs. the 1px baseline (7.52e-3): **+46.6%, and this time WNS is actually positive.**
+vs. the MP4 provisional number (8.269e-3): that number was never valid (WNS = -4.338 ns)
+and is superseded by this result as the real, reportable 2px FoM.
+
+Verified functionally first, same as every phase before it: `Scripts/run_simulation_2px.tcl`
+then `Python/verify.py` against `Images/kernels/edge_3x3.mem` — 900/900 outputs bit-exact.
+
+LUT (1411) is the highest of any timing-closed configuration in this project — that's the
+direct cost of doing all 18 products in fabric with zero DSPs. If FoM needs to go higher
+than 1.10e-2, that LUT count is the next thing to attack (trim `Prod_W`/`Acc_W`, or look
+for sharing between the Left/Right adder trees), not the clock or the DSP count.
