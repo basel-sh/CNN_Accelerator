@@ -11,7 +11,8 @@ Figure of Merit:
 FoM = Throughput / (Power x (LUTs + 50*DSPs + 100*BRAMs))
 ```
 where Throughput is in output pixels/cycle. Higher is better. Final value:
-**1.10e-2** — see `Documentation/PerformanceResults.md`.
+**9.61e-3** (re-synthesized 2026-09-12, includes the output-FIFO fix and the
+K-generalized MAC reduction) — see `Documentation/PerformanceResults.md`.
 
 ## Functional Requirements
 
@@ -27,7 +28,7 @@ where Throughput is in output pixels/cycle. Higher is better. Final value:
 | 8 | ReLU is optional | `Relu_En` input, applied inline at `top_2px.v`'s output mux |
 | 9 | Verification against a Python/C++/MATLAB golden model | `Python/golden_model.py` + `Python/verify.py` |
 | 10 | FPGA synthesis reports required | `Reports/` (routed, `Scripts/synthesize_2px.tcl`) |
-| 11 | Timing reports required | `Reports/timing/` — WNS +35.076 ns, all constraints met |
+| 11 | Timing reports required | `Reports/timing/` — WNS +32.627 ns, all constraints met |
 | 12 | Power reports required | `Reports/power/` |
 
 ## Evaluation Criteria
@@ -40,7 +41,7 @@ where Throughput is in output pixels/cycle. Higher is better. Final value:
 | Throughput / Latency | 2 output pixels/cycle, measured from simulation + `Architecture.md` pipeline description |
 | Timing closure / Fmax | `Reports/timing/`, `Vivado_2px/constraints_2px.xdc` |
 | Power | `Reports/power/` |
-| Figure of Merit (FoM) | 1.10e-2 — `Documentation/PerformanceResults.md` |
+| Figure of Merit (FoM) | 9.61e-3 — `Documentation/PerformanceResults.md` |
 
 ## Traceability
 

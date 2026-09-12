@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CNN Accelerator Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF2F7;
+  --surface:#FFFFFF;
+  --ink:#10151C;
+  --ink-soft:#4E5867;
+  --ink-faint:#8B94A3;
+  --line:#DEE4EC;
+  --line-strong:#C3CCD8;
+  --accent-a:#2A54FF;
+  --accent-b:#8B3FFB;
+  --accent-c:#FF3D96;
+  --accent-grad: linear-gradient(90deg,var(--accent-a) 0%,var(--accent-b) 55%,var(--accent-c) 100%);
+  --good:#0E8F63;
+  --good-bg:#E4F5EC;
+  --warn:#9C6A05;
+  --warn-bg:#FBF0D9;
+  --bad:#B0281F;
+  --bad-bg:#FBE7E5;
+  --code-bg:#EEF1F7;
+  --font-display:'IBM Plex Sans Condensed',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:#0C0F14;color:var(--ink);font-family:var(--font-body);overflow:hidden;}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;margin:0;text-wrap:balance;}
+p{margin:0;}
+.mono{font-family:var(--font-mono);}
+.tabular{font-variant-numeric:tabular-nums;}
+
+/* ---------------- stage scaling ---------------- */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0C0F14;}
+#stage{position:relative;width:1280px;height:720px;transform-origin:center center;background:var(--bg);overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45);}
+
+/* ---------------- slide base ---------------- */
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:56px 76px 46px 76px;background:var(--bg);
+  opacity:0;visibility:hidden;pointer-events:none;z-index:1;
+  transform:translateX(28px) scale(.985);filter:blur(6px);
+  transition:opacity .52s cubic-bezier(.22,.68,0,1), transform .58s cubic-bezier(.22,.68,0,1), filter .5s ease, visibility 0s linear .52s;}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto;z-index:2;transform:translateX(0) scale(1);filter:blur(0);transition:opacity .52s cubic-bezier(.22,.68,0,1), transform .58s cubic-bezier(.22,.68,0,1), filter .5s ease, visibility 0s;}
+.slide.leaving-back{transform:translateX(-28px) scale(.985);filter:blur(6px);}
+@media (prefers-reduced-motion: reduce){ .slide{transition:opacity .25s ease; transform:none !important; filter:none !important;} }
+.slide .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none;z-index:0;background:conic-gradient(from 0deg,var(--accent-a),var(--accent-b),var(--accent-c),var(--accent-a));animation:spin 26s linear infinite;}
+.slide .blob.b1{width:520px;height:520px;top:-220px;right:-180px;}
+.slide .blob.b2{width:380px;height:380px;bottom:-200px;left:-140px;opacity:.22;animation-duration:34s;animation-direction:reverse;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+@media (prefers-reduced-motion: reduce){ .slide .blob{animation:none;} }
+
+.slide > *{position:relative;z-index:1;}
+
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.eyebrow .num{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent-b);letter-spacing:1.5px;}
+.eyebrow .label{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-faint);}
+.rule{height:4px;border-radius:3px;background:var(--accent-grad);width:56px;background-size:200% 100%;animation:slide-grad 6s linear infinite;}
+@media (prefers-reduced-motion: reduce){ .rule{animation:none;} }
+@keyframes slide-grad{to{background-position:200% 0;}}
+
+h2.headline{font-size:42px;line-height:1.06;margin-top:10px;letter-spacing:-.3px;}
+h2.headline .g{background:var(--accent-grad);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 6s linear infinite;}
+@media (prefers-reduced-motion: reduce){ h2.headline .g{animation:none;} }
+.sub{font-size:17px;color:var(--ink-soft);margin-top:10px;max-width:820px;line-height:1.45;}
+
+.content{flex:1;min-height:0;margin-top:22px;display:flex;flex-direction:column;}
+
+/* ---------------- footer chrome ---------------- */
+.chrome-footer{position:absolute;left:76px;right:76px;bottom:18px;display:flex;align-items:center;gap:14px;z-index:5;}
+.chrome-footer .scrubber{flex:1;position:relative;padding:9px 0;cursor:pointer;}
+.chrome-footer .track{position:relative;height:3px;background:var(--line-strong);border-radius:2px;overflow:hidden;transition:height .15s, transform .15s;}
+.chrome-footer .scrubber:hover .track{height:6px;}
+.chrome-footer .fill{height:100%;background:var(--accent-grad);border-radius:2px;transition:width .45s cubic-bezier(.4,0,.2,1);width:0%;}
+.chrome-footer .ticks{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;}
+.chrome-footer .tick{position:absolute;top:50%;width:1px;height:6px;transform:translate(-50%,-50%);background:rgba(16,21,28,.28);}
+.chrome-footer .scrubber:hover .tick{height:10px;background:rgba(16,21,28,.4);}
+.chrome-footer .tick.done{background:rgba(255,255,255,.55);}
+.chrome-footer .scrub-tip{position:absolute;bottom:100%;margin-bottom:10px;transform:translateX(-50%);background:#10151C;color:#fff;font-family:var(--font-mono);font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;box-shadow:0 6px 18px rgba(16,21,28,.3);}
+.chrome-footer .scrub-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#10151C;}
+.chrome-footer .scrubber:hover .scrub-tip, .chrome-footer .scrubber.scrubbing .scrub-tip{opacity:1;}
+.chrome-footer .count{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);letter-spacing:1px;white-space:nowrap;}
+.chrome-footer .brand{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);letter-spacing:1px;white-space:nowrap;}
+
+.navbtn{position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;box-shadow:0 4px 14px rgba(16,21,28,.15);transition:transform .18s cubic-bezier(.34,1.56,.64,1), background .15s, box-shadow .2s;}
+.navbtn:hover{background:#fff;transform:translateY(-50%) scale(1.14);box-shadow:0 8px 24px rgba(42,84,255,.25);}
+.navbtn:active{transform:translateY(-50%) scale(.94);}
+.navbtn svg{width:18px;height:18px;stroke:var(--ink);}
+#prevBtn{left:14px;} #nextBtn{right:14px;}
+.navbtn.disabled{opacity:.25;pointer-events:none;}
+#clickCatcher{position:absolute;inset:0;z-index:2;cursor:pointer;}
+
+/* ---------------- fragments ---------------- */
+.frag{opacity:0;transition:opacity .5s cubic-bezier(.22,.68,0,1), transform .5s cubic-bezier(.22,.68,0,1);}
+.frag.rise{transform:translateY(22px);}
+.frag.rise.in{opacity:1;transform:translateY(0);}
+.frag.left{transform:translateX(-30px);}
+.frag.left.in{opacity:1;transform:translateX(0);}
+.frag.right{transform:translateX(30px);}
+.frag.right.in{opacity:1;transform:translateX(0);}
+.frag.grow{transform:scale(.82);}
+.frag.grow.in{opacity:1;transform:scale(1);}
+.frag.pop{transform:scale(.5);transition-duration:.55s, .55s;transition-timing-function:cubic-bezier(.34,1.56,.64,1),cubic-bezier(.34,1.56,.64,1);}
+.frag.pop.in{opacity:1;transform:scale(1);}
+.frag.draw path,.frag.draw line,.frag.draw polyline{transition:stroke-dashoffset 1s ease;}
+.frag.draw{opacity:1;}
+.frag.draw .fadebox{opacity:0;transition:opacity .45s ease;}
+.frag.draw.in .fadebox{opacity:1;}
+
+/* ---------------- shared components ---------------- */
+.chip{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--code-bg);color:var(--ink-soft);border:1px solid var(--line-strong);}
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.status.done{background:var(--good-bg);color:var(--good);}
+.status.todo{background:var(--warn-bg);color:var(--warn);}
+.status.bad{background:var(--bad-bg);color:var(--bad);}
+.status .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+.card{background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(16,21,28,.05);}
+.stat{font-family:var(--font-mono);}
+.stat .k{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-faint);}
+.stat .v{font-size:34px;font-weight:700;margin-top:2px;color:var(--ink);}
+.stat .v.gradient{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.stat .u{font-size:14px;color:var(--ink-faint);font-weight:500;margin-left:2px;}
+
+.callout{border-left:4px solid;border-radius:4px;padding:14px 18px;font-size:15px;line-height:1.45;}
+.callout.good{border-color:var(--good);background:var(--good-bg);color:#0B5E42;}
+.callout.warn{border-color:var(--warn);background:var(--warn-bg);color:#6E4C03;}
+.callout.neutral{border-color:var(--accent-a);background:#EFF2FF;color:#1E3A9E;}
+.callout .t{font-family:var(--font-mono);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:4px;}
+
+table.dtable{border-collapse:collapse;width:100%;}
+table.dtable th{font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-strong);}
+table.dtable td{padding:9px 10px;border-bottom:1px solid var(--line);font-size:14.5px;}
+table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+.hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;font-family:var(--font-mono);font-size:11px;color:#9aa4b5;letter-spacing:1px;background:rgba(255,255,255,.85);padding:6px 14px;border-radius:20px;border:1px solid rgba(0,0,0,.06);transition:opacity .6s;}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <!-- SLIDES INJECTED BELOW -->
+    <div id="slideRoot">
+
+    <!-- ============ SLIDE 1 — TITLE ============ -->
+    <section class="slide">
+      <div class="blob b1"></div><div class="blob b2"></div>
+      <div style="display:flex;justify-content:space-between;">
+        <span class="mono" style="font-size:12px;letter-spacing:3px;color:var(--ink-faint);text-transform:uppercase;">IEEE SSCS &middot; Egypt Chapter</span>
+        <span class="mono" style="font-size:12px;letter-spacing:3px;color:var(--ink-faint);text-transform:uppercase;">2026 Student Design Competition</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="frag rise" style="margin-bottom:14px;">
+          <span class="chip" style="background:#10151C;color:#fff;border-color:#10151C;">TEAM SILICON MINDS</span>
+        </div>
+        <h1 style="font-size:76px;line-height:.98;letter-spacing:-1.5px;">FPGA CNN<br>Convolution <span style="background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;">Accelerator</span></h1>
+        <div class="frag rise draw" style="margin-top:20px;">
+          <div class="rule" style="width:120px;height:5px;"></div>
+        </div>
+        <p class="frag rise sub" style="font-size:19px;margin-top:18px;max-width:640px;">A streaming, zero-DSP N&times;N convolution engine for edge-AI vision, two output pixels every clock, one clock domain, timing-closed with room to spare.</p>
+        <div class="frag pop" style="margin-top:30px;display:flex;gap:14px;align-items:center;">
+          <div class="card" style="padding:14px 22px;display:inline-flex;gap:26px;align-items:baseline;">
+            <div class="stat"><div class="k">Figure of Merit</div><div class="v gradient" style="font-size:30px;" data-count="9.61" data-decimals="2" data-suffix="&times;10&minus;&sup3;">0.00</div></div>
+            <div class="stat"><div class="k">Throughput</div><div class="v" style="font-size:30px;">2<span class="u">px/cyc</span></div></div>
+            <div class="stat"><div class="k">DSP</div><div class="v" style="font-size:30px;">0</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="frag rise" style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div class="mono" style="font-size:11px;color:var(--ink-faint);letter-spacing:1.5px;">DESIGNED, VERIFIED &amp; SYNTHESIZED BY</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:18px;">Basel</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="mono" style="font-size:11px;color:var(--ink-faint);">TARGET DEVICE</div>
+          <div class="mono" style="font-size:13px;font-weight:600;">xc7a35tcpg236&minus;1 &middot; Artix&minus;7</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 2 — MOTIVATION ============ -->
+    <section class="slide">
+      <div class="blob b1"></div>
+      <div class="eyebrow"><span class="num">00</span><span class="label">Why a dedicated accelerator</span></div>
+      <div class="rule"></div>
+      <h2 class="headline">Convolution is the cost.<br>Fixed-function is the answer.</h2>
+      <div class="content" style="justify-content:center;gap:22px;max-width:920px;">
+        <div class="frag rise" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="mono" style="font-size:22px;font-weight:700;color:var(--accent-a);">01</div>
+          <p class="sub" style="font-size:18px;margin:0;">The convolution layer, a sliding-window multiply-accumulate, is the most compute- and memory-intensive stage of almost every CNN vision pipeline.</p>
+        </div>
+        <div class="frag rise" style="display:flex;gap:16px;align-items:flex-start;">
+          <div class="mono" style="font-size:22px;font-weight:700;color:var(--accent-b);">02</div>
+          <p class="sub" style="font-size:18px;margin:0;">On power- and area-constrained edge devices, a fixed datapath beats general-purpose compute on throughput per watt, per logic cell, for exactly this one operation.</p>
+        </div>
+        <div class="frag grow" style="margin-top:6px;">
+          <div class="callout neutral" style="max-width:760px;">
+            <span class="t">This project</span>Build that datapath, to the IEEE SSCS Egypt 2026 specification, and prove every number with a routed report, not an estimate.
+          </div>
+        </div>
+      </div>
+      <div class="frag rise" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <span class="chip">&ge;32&times;32 input</span><span class="chip">8b unsigned pixels</span><span class="chip">8b signed kernel</span>
+        <span class="chip">stride 1</span><span class="chip">&ge;16b signed out</span><span class="chip">optional ReLU</span>
+        <span class="chip">golden-model verified</span>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 3 — REQUIREMENTS CHECKLIST ============ -->
+    <section class="slide">
+      <div class="blob b2"></div>
+      <div class="eyebrow"><span class="num">01</span><span class="label">Requirements &amp; Bonus</span></div>
+      <div class="rule"></div>
+      <h2 class="headline">Every requirement, <span class="g">done.</span></h2>
+      <div class="content">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 28px;flex:1;">
+          <div class="frag left" style="display:flex;flex-direction:column;gap:9px;">
+            <div class="req"><span class="status done"><span class="dot"></span></span> &ge;32&times;32 grayscale / feature-map input</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Unsigned fixed-point input precision</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Programmable N&times;N kernel</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Signed 8-bit kernel coefficients</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Stride = 1</div>
+          </div>
+          <div class="frag right" style="display:flex;flex-direction:column;gap:9px;">
+            <div class="req"><span class="status done"><span class="dot"></span></span> Min. 16-bit signed output <span class="mono" style="color:var(--ink-faint);font-size:12px;">(20-bit)</span></div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Optional ReLU <span class="mono" style="color:var(--ink-faint);font-size:12px;">bonus</span></div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Golden-model verification</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Synthesis + timing + power reports</div>
+            <div class="req"><span class="status done"><span class="dot"></span></span> Figure of Merit computed</div>
+          </div>
+        </div>
+        <div class="frag pop" style="align-self:center;margin-top:8px;">
+          <div class="card" style="display:flex;align-items:center;gap:22px;padding:16px 30px;">
+            <div class="stat"><div class="k">Requirements met</div><div class="v gradient" data-count="10" data-suffix="/10">0/10</div></div>
+            <div style="width:1px;height:36px;background:var(--line-strong);"></div>
+            <div class="stat"><div class="k">Throughput bonus</div><div class="v" style="color:var(--good);">2&times; <span class="u">target</span></div></div>
+          </div>
+        </div>
+      </div>
+      <style>.req{font-size:15.5px;display:flex;align-items:center;gap:10px;}</style>
+    </section>
+
+    <!-- ============ SLIDE 4 — ARCHITECTURE ============ -->
+    <section class="slide">
+      <div class="eyebrow"><span class="num">02</span><span class="label">System Architecture</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">One clock. Two lanes. Zero DSP.</h2>
+      <div class="content" style="justify-content:center;">
+        <svg viewBox="0 0 1100 400" width="100%" style="max-height:400px;" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+          <style>.slide svg .frag{transform-box:fill-box;transform-origin:50% 50%;}</style>
+          <defs>
+            <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4E5867"/></marker>
+            <linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2A54FF"/><stop offset="55%" stop-color="#8B3FFB"/><stop offset="100%" stop-color="#FF3D96"/></linearGradient>
+          </defs>
+
+          <g class="frag pop">
+            <rect x="380" y="6" width="260" height="50" rx="8" fill="#EFF2FF" stroke="#2A54FF" stroke-width="1.6"/>
+            <text x="510" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1E3A9E">controller_2px.v</text>
+            <text x="510" y="44" text-anchor="middle" font-size="10" fill="#1E3A9E">S_Idle &rarr; S_Run &rarr; S_Done</text>
+            <rect x="30" y="78" width="200" height="60" rx="8" fill="#FBFCFE" stroke="#C3CCD8" stroke-width="1.4"/>
+            <text x="130" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#10151C">kernel_memory.v</text>
+            <text x="130" y="120" text-anchor="middle" font-size="9.5" fill="#8B94A3">signed 8b K&sup2; coeffs</text>
+          </g>
+
+          <g class="frag rise">
+            <line x1="510" y1="56" x2="510" y2="78" stroke="#8B3FFB" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+            <rect x="380" y="78" width="260" height="60" rx="8" fill="#FBFCFE" stroke="#C3CCD8" stroke-width="1.4"/>
+            <text x="510" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#10151C">image_memory_2px.v</text>
+            <text x="510" y="120" text-anchor="middle" font-size="9.5" fill="#8B94A3">dual read port &middot; 1 BRAM tile</text>
+            <text x="660" y="112" font-size="10" fill="#8B94A3">2 px/cyc &#8594;</text>
+          </g>
+
+          <g class="frag rise">
+            <line x1="510" y1="138" x2="510" y2="168" stroke="url(#gg)" stroke-width="2.2" marker-end="url(#ar)"/>
+            <rect x="380" y="168" width="260" height="60" rx="8" fill="#FBFCFE" stroke="#C3CCD8" stroke-width="1.4"/>
+            <text x="510" y="193" text-anchor="middle" font-size="13" font-weight="700" fill="#10151C">line_buffer_2px.v</text>
+            <text x="510" y="210" text-anchor="middle" font-size="9.5" fill="#8B94A3">K&minus;1 row delay &middot; both lanes</text>
+          </g>
+
+          <g class="frag rise">
+            <line x1="510" y1="228" x2="510" y2="258" stroke="url(#gg)" stroke-width="2.2" marker-end="url(#ar)"/>
+            <rect x="380" y="258" width="260" height="60" rx="8" fill="#FBFCFE" stroke="#C3CCD8" stroke-width="1.4"/>
+            <text x="510" y="283" text-anchor="middle" font-size="13" font-weight="700" fill="#10151C">window_generator_2px.v</text>
+            <text x="510" y="300" text-anchor="middle" font-size="9.5" fill="#8B94A3">2 overlapping K&times;K windows/cyc</text>
+          </g>
+
+          <g class="frag grow">
+            <line x1="230" y1="118" x2="830" y2="230" stroke="#4E5867" stroke-width="1.3" marker-end="url(#ar)"/>
+            <text x="700" y="150" font-size="9.5" fill="#8B94A3">Kernel_Flat</text>
+            <line x1="640" y1="288" x2="830" y2="255" stroke="url(#gg)" stroke-width="2.2" marker-end="url(#ar)"/>
+            <rect x="830" y="200" width="240" height="72" rx="8" fill="#E9F9F1" stroke="#0E8F63" stroke-width="1.8"/>
+            <text x="950" y="228" text-anchor="middle" font-size="14" font-weight="700" fill="#0B5E42">mac_pair.v</text>
+            <text x="950" y="245" text-anchor="middle" font-size="10" fill="#0B5E42">18 fabric multiplies &middot; 0 DSP</text>
+            <text x="950" y="260" text-anchor="middle" font-size="10" fill="#0B5E42">balanced adder tree &times;2</text>
+          </g>
+
+          <g class="frag right">
+            <line x1="950" y1="272" x2="950" y2="300" stroke="url(#gg)" stroke-width="2.2" marker-end="url(#ar)"/>
+            <rect x="830" y="300" width="240" height="60" rx="8" fill="#10151C"/>
+            <text x="950" y="325" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">top_2px.v output</text>
+            <text x="950" y="342" text-anchor="middle" font-size="9.5" fill="#B9C2D6">Out_Data0/1 &middot; ReLU inline</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 5 — FSM + MEMORY ============ -->
+    <section class="slide">
+      <div class="blob b1"></div>
+      <div class="eyebrow"><span class="num">03</span><span class="label">Control &amp; Memory</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Three states. Three memories.</h2>
+      <div class="content" style="display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;">
+        <svg viewBox="0 0 480 240" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+          <style>.slide svg .frag{transform-box:fill-box;transform-origin:50% 50%;}</style>
+          <defs><marker id="ar5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4E5867"/></marker></defs>
+          <g class="frag pop">
+            <circle cx="65" cy="130" r="46" fill="#EFF2FF" stroke="#2A54FF" stroke-width="2"/>
+            <text x="65" y="135" text-anchor="middle" font-size="14" font-weight="700" fill="#1E3A9E">S_Idle</text>
+          </g>
+          <g class="frag rise">
+            <line x1="113" y1="130" x2="187" y2="130" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar5)"/>
+            <text x="150" y="118" text-anchor="middle" font-size="10" fill="#4E5867">Start=1</text>
+            <circle cx="240" cy="130" r="46" fill="#F3EEFF" stroke="#8B3FFB" stroke-width="2"/>
+            <text x="240" y="135" text-anchor="middle" font-size="14" font-weight="700" fill="#5B23B8">S_Run</text>
+            <text x="240" y="195" text-anchor="middle" font-size="9" fill="#8B94A3">Pair_Valid raised per window</text>
+          </g>
+          <g class="frag rise">
+            <line x1="288" y1="130" x2="362" y2="130" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar5)"/>
+            <text x="325" y="118" text-anchor="middle" font-size="9.5" fill="#4E5867">scan complete</text>
+            <circle cx="415" cy="130" r="46" fill="#FFEFF6" stroke="#FF3D96" stroke-width="2"/>
+            <text x="415" y="135" text-anchor="middle" font-size="14" font-weight="700" fill="#B8125F">S_Done</text>
+          </g>
+          <g class="frag draw">
+            <path class="fadebox" d="M415,82 C415,20 65,20 65,82" fill="none" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar5)"/>
+            <text x="240" y="18" text-anchor="middle" font-size="9.5" fill="#4E5867" class="fadebox">Scan_Done (1 cycle)</text>
+          </g>
+        </svg>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="frag left card" style="padding:14px 18px;">
+            <div class="mono" style="font-weight:700;font-size:14px;">image_memory_2px.v</div>
+            <div style="font-size:13px;color:var(--ink-soft);margin-top:3px;">Full frame, 1 Block RAM tile, two independent read ports</div>
+          </div>
+          <div class="frag left card" style="padding:14px 18px;">
+            <div class="mono" style="font-weight:700;font-size:14px;">kernel_memory.v</div>
+            <div style="font-size:13px;color:var(--ink-soft);margin-top:3px;">Small register bank, every coefficient exposed at once, not a RAM</div>
+          </div>
+          <div class="frag left card" style="padding:14px 18px;">
+            <div class="mono" style="font-weight:700;font-size:14px;">line_buffer_2px.v</div>
+            <div style="font-size:13px;color:var(--ink-soft);margin-top:3px;">Flip-flop shift chains, not RAM, sidesteps a same-cycle read/write hazard found early on</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 6 — MAC ENGINE ============ -->
+    <section class="slide">
+      <div class="blob b2"></div>
+      <div class="eyebrow"><span class="num">03</span><span class="label">The MAC Engine</span></div>
+      <div class="rule"></div>
+      <h2 class="headline">18 multiplies. <span class="g">Zero DSP.</span></h2>
+      <div class="content" style="justify-content:center;gap:22px;">
+        <div style="display:flex;gap:18px;">
+          <div class="frag grow card" style="flex:1;text-align:center;padding:22px 10px;">
+            <div class="stat"><div class="k">Products / cycle</div><div class="v gradient" data-count="18">0</div></div>
+          </div>
+          <div class="frag grow card" style="flex:1;text-align:center;padding:22px 10px;">
+            <div class="stat"><div class="k">Pipeline stages</div><div class="v gradient" data-count="2">0</div></div>
+          </div>
+          <div class="frag grow card" style="flex:1;text-align:center;padding:22px 10px;">
+            <div class="stat"><div class="k">DSP48 used</div><div class="v" style="color:var(--good);" data-count="0">0</div></div>
+          </div>
+        </div>
+        <div class="frag rise sub" style="font-size:17px;max-width:900px;">Each output window needs 9 products; two overlapping windows a pixel apart share <em>no</em> reusable products, the shift pairs every pixel with a different coefficient. <span class="mono">mac_pair.v</span> registers all 18 products, then reduces each lane through a balanced 4-level adder tree.</div>
+        <div class="frag pop">
+          <div class="callout neutral" style="max-width:900px;"><span class="t">The deliberate alternative</span>Sharing a few DSP48 slices over a second, faster clock was built and simulated first (next section), this fabric datapath is what actually closed timing.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 7 — DESIGN SPACE JOURNEY ============ -->
+    <section class="slide">
+      <div class="eyebrow"><span class="num">04</span><span class="label">Design-Space Exploration</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Three architectures, actually built.</h2>
+      <div class="content" style="flex-direction:row;gap:20px;align-items:stretch;">
+        <div class="frag left card" style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <span class="chip" style="align-self:flex-start;">1&times; throughput</span>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px;">1px baseline</div>
+          <div class="mono" style="font-size:12.5px;color:var(--ink-soft);">LUT 842 &middot; FF 758 &middot; DSP 0</div>
+          <div class="mono" style="font-size:12.5px;color:var(--good);">WNS +35.5ns</div>
+          <div class="mono" style="font-size:22px;font-weight:700;margin-top:auto;">7.52e&minus;3</div>
+        </div>
+        <div class="frag right card" style="flex:1;display:flex;flex-direction:column;gap:8px;border-color:var(--bad);background:#FFFBFA;">
+          <span class="status bad"><span class="dot"></span>rejected</span>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px;">4-DSP / 120MHz</div>
+          <div class="mono" style="font-size:12.5px;color:var(--ink-soft);">LUT 738 &middot; FF 1286 &middot; DSP 4</div>
+          <div class="mono" style="font-size:12.5px;color:var(--bad);">WNS &minus;4.338ns, FAILS</div>
+          <div class="mono" style="font-size:22px;font-weight:700;margin-top:auto;color:var(--ink-faint);text-decoration:line-through;">8.27e&minus;3</div>
+        </div>
+        <div class="frag pop card" style="flex:1.15;display:flex;flex-direction:column;gap:8px;border-color:var(--good);background:linear-gradient(180deg,#fff,#F3FBF7);box-shadow:0 10px 30px rgba(14,143,99,.18);">
+          <span class="status done"><span class="dot"></span>adopted</span>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px;">2px zero-DSP</div>
+          <div class="mono" style="font-size:12.5px;color:var(--ink-soft);">LUT 1605 &middot; FF 1288 &middot; DSP 0</div>
+          <div class="mono" style="font-size:12.5px;color:var(--good);">WNS +32.627ns, PASS</div>
+          <div class="mono gradient" style="font-size:30px;font-weight:700;margin-top:auto;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="9.61" data-decimals="2" data-suffix="e&minus;3">0e-3</div>
+        </div>
+      </div>
+      <div class="frag rise" style="text-align:center;margin-top:16px;">
+        <span class="chip" style="background:var(--good-bg);color:var(--good);border-color:var(--good);font-size:14px;padding:8px 18px;">+27.8% FoM over the 1px baseline, and more timing margin than either alternative</span>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 8 — WHY DSP FAILED ============ -->
+    <section class="slide">
+      <div class="blob b1"></div>
+      <div class="eyebrow"><span class="num">04</span><span class="label">Why the DSP Path Failed</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">A fast clock that never closed.</h2>
+      <div class="content" style="gap:20px;">
+        <div style="display:flex;gap:16px;">
+          <div class="frag pop card" style="flex:1;text-align:center;">
+            <div class="stat"><div class="k">Fast-clock WNS</div><div class="v" style="color:var(--bad);font-size:30px;" data-count="-4.338" data-decimals="3" data-suffix=" ns">0.000 ns</div></div>
+          </div>
+          <div class="frag pop card" style="flex:1;text-align:center;">
+            <div class="stat"><div class="k">Failing endpoints</div><div class="v" style="color:var(--bad);font-size:30px;" data-count="118">0</div></div>
+          </div>
+          <div class="frag pop card" style="flex:1;text-align:center;">
+            <div class="stat"><div class="k">TNS</div><div class="v" style="color:var(--bad);font-size:30px;" data-count="-242.68" data-decimals="2" data-suffix=" ns">0 ns</div></div>
+          </div>
+        </div>
+        <div class="frag rise sub" style="font-size:16px;">Critical path: <span class="mono">DSP48E1 &rarr; fabric CARRY4 accumulation &rarr; register</span>, 12.59&nbsp;ns against an 8.33&nbsp;ns (120&nbsp;MHz) budget. Flip-flops rose 70% from the Gray-code CDC pointer logic the crossing needed.</div>
+        <div class="frag rise" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <span class="chip">DSP48 &times; 4 &rarr; +50 each in FoM</span>
+          <span class="chip">9-cycle MAC sharing &rarr; throughput loss dominates</span>
+          <span class="chip">Distributed-RAM image mem &rarr; costs more LUTs than it saves</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 9 — BIT WIDTHS ============ -->
+    <section class="slide">
+      <div class="blob b2"></div>
+      <div class="eyebrow"><span class="num">05</span><span class="label">Fixed-Point &amp; Overflow Proof</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Sized once. Proven, not assumed.</h2>
+      <div class="content" style="gap:22px;">
+        <div style="display:flex;gap:16px;">
+          <div class="frag left card" style="flex:1;text-align:center;padding:16px;"><div class="stat"><div class="k">Pixel_W</div><div class="v">8<span class="u">b unsigned</span></div></div></div>
+          <div class="frag left card" style="flex:1;text-align:center;padding:16px;"><div class="stat"><div class="k">Kernel_W</div><div class="v">8<span class="u">b signed</span></div></div></div>
+          <div class="frag left card" style="flex:1;text-align:center;padding:16px;"><div class="stat"><div class="k">Acc_W</div><div class="v gradient">20<span class="u">b signed</span></div></div></div>
+        </div>
+        <div class="frag rise" style="display:flex;align-items:center;gap:26px;">
+          <div style="flex:1;">
+            <div class="mono" style="font-size:12px;color:var(--ink-faint);margin-bottom:4px;">WORST-CASE 9-TERM SUM</div>
+            <div style="height:22px;background:var(--code-bg);border-radius:6px;overflow:hidden;border:1px solid var(--line-strong);">
+              <div style="height:100%;width:56%;background:linear-gradient(90deg,#8B3FFB,#FF3D96);"></div>
+            </div>
+            <div class="mono" style="font-size:13px;margin-top:3px;">293,760</div>
+          </div>
+          <div style="flex:1;">
+            <div class="mono" style="font-size:12px;color:var(--ink-faint);margin-bottom:4px;">20-BIT SIGNED RANGE</div>
+            <div style="height:22px;background:var(--code-bg);border-radius:6px;overflow:hidden;border:1px solid var(--line-strong);">
+              <div style="height:100%;width:100%;background:linear-gradient(90deg,#2A54FF,#0E8F63);"></div>
+            </div>
+            <div class="mono" style="font-size:13px;margin-top:3px;">524,288</div>
+          </div>
+        </div>
+        <div class="frag pop">
+          <div class="callout good" style="max-width:920px;"><span class="t">Overflow-proof by construction</span>524,288 &gt; 293,760 for <em>every</em> valid 8-bit signed kernel &times; 8-bit unsigned pixel combination, not just the Sobel kernels tested. No saturation or rounding logic needed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 10 — VERIFICATION METHODOLOGY ============ -->
+    <section class="slide">
+      <div class="eyebrow"><span class="num">06</span><span class="label">Verification Methodology</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Bit-exact, or it didn't happen.</h2>
+      <div class="content" style="justify-content:center;">
+        <svg viewBox="0 0 1000 170" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+          <style>.slide svg .frag{transform-box:fill-box;transform-origin:50% 50%;}</style>
+          <defs><marker id="ar10" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4E5867"/></marker></defs>
+          <g class="frag left">
+            <rect x="10" y="50" width="200" height="70" rx="8" fill="#FBFCFE" stroke="#C3CCD8" stroke-width="1.6"/>
+            <text x="110" y="82" text-anchor="middle" font-size="13" font-weight="700">Input image + kernel</text>
+            <text x="110" y="100" text-anchor="middle" font-size="10" fill="#8B94A3">.mem stimulus files</text>
+          </g>
+          <g class="frag rise">
+            <line x1="210" y1="65" x2="255" y2="65" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar10)"/>
+            <line x1="210" y1="105" x2="255" y2="105" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar10)"/>
+            <rect x="255" y="18" width="220" height="60" rx="8" fill="#EFF2FF" stroke="#2A54FF" stroke-width="1.6"/>
+            <text x="365" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="#1E3A9E">Python golden model</text>
+            <text x="365" y="62" text-anchor="middle" font-size="10" fill="#1E3A9E">golden_model.py</text>
+            <rect x="255" y="86" width="220" height="60" rx="8" fill="#E9F9F1" stroke="#0E8F63" stroke-width="1.6"/>
+            <text x="365" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#0B5E42">RTL simulation</text>
+            <text x="365" y="130" text-anchor="middle" font-size="10" fill="#0B5E42">tb_top_2px.v, Vivado XSim</text>
+          </g>
+          <g class="frag rise">
+            <line x1="475" y1="42" x2="525" y2="68" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar10)"/>
+            <line x1="475" y1="120" x2="525" y2="82" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar10)"/>
+            <rect x="525" y="45" width="180" height="60" rx="8" fill="#F3EEFF" stroke="#8B3FFB" stroke-width="1.6"/>
+            <text x="615" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#5B23B8">verify.py</text>
+            <text x="615" y="89" text-anchor="middle" font-size="10" fill="#5B23B8">element-by-element compare</text>
+          </g>
+          <g class="frag pop">
+            <line x1="705" y1="75" x2="750" y2="75" stroke="#4E5867" stroke-width="1.6" marker-end="url(#ar10)"/>
+            <rect x="750" y="42" width="230" height="66" rx="8" fill="#10151C"/>
+            <text x="865" y="82" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">PASS / FAIL</text>
+          </g>
+        </svg>
+        <div class="frag rise" style="text-align:center;margin-top:10px;">
+          <span class="chip">CI-ready, verify.py exits 0 / 1</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 11 — VERIFICATION RESULTS ============ -->
+    <section class="slide">
+      <div class="blob b1"></div>
+      <div class="eyebrow"><span class="num">06</span><span class="label">Verification Results</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Three stimulus sets. <span class="g">Zero mismatches.</span></h2>
+      <div class="content" style="gap:16px;">
+        <table class="dtable frag rise">
+          <tr><th>Case</th><th>Stimulus</th><th style="text-align:right;">Result</th></tr>
+          <tr><td>Demo kernel, ReLU off</td><td class="mono" style="font-size:12.5px;">vertical-Sobel, 32&times;32</td><td class="num"><span class="status done"><span class="dot"></span>900/900</span></td></tr>
+          <tr><td>Alternate input photo</td><td class="mono" style="font-size:12.5px;">different source image</td><td class="num"><span class="status done"><span class="dot"></span>900/900</span></td></tr>
+          <tr><td>Alternate kernel</td><td class="mono" style="font-size:12.5px;">horizontal-Sobel</td><td class="num"><span class="status done"><span class="dot"></span>900/900</span></td></tr>
+          <tr><td>ReLU on</td><td class="mono" style="font-size:12.5px;">-testplusarg RELU=1</td><td class="num"><span class="status done"><span class="dot"></span>900/900</span></td></tr>
+        </table>
+        <div style="display:flex;gap:22px;align-items:center;">
+          <div class="frag pop card" style="padding:16px 26px;">
+            <div class="stat"><div class="k">Bit-exact outputs, every run</div><div class="v gradient" style="font-size:36px;" data-count="900" data-suffix="/900">0/900</div></div>
+          </div>
+          <div class="frag rise callout warn" style="flex:1;margin:0;"><span class="t">The bug a PASS didn't catch</span>A hand-typed kernel sign error (&minus;2 &rarr; 2) still reported PASS, RTL and golden model agreed on the <em>wrong</em> file. Caught only because the output image still looked vertical, not horizontal.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 11.5 — ONE-COMMAND REGRESSION ============ -->
+    <section class="slide">
+      <div class="blob b2"></div>
+      <div class="eyebrow"><span class="num">06.2</span><span class="label">Post-Fix Re-Verification</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">One command. <span class="g">Zero manual steps.</span></h2>
+      <div class="content" style="gap:16px;">
+        <div class="frag rise sub" style="font-size:15.5px;max-width:960px;">An independent audit re-ran every row of the test plan from scratch and found two real RTL bugs &mdash; a MAC reduction hardcoded to K=3, and a missing output FIFO that could silently drop unread results &mdash; plus two testbench bugs that were quietly hiding evidence from the results themselves.</div>
+        <div style="display:flex;gap:14px;">
+          <div class="frag left callout warn" style="flex:1;margin:0;padding:12px 16px;"><span class="t">Bug &mdash; message truncation</span>Fixed-width <span class="mono">check()</span> buffers silently dropped Test-ID prefixes on long messages. Widened across all six testbenches.</div>
+          <div class="frag right callout warn" style="flex:1;margin:0;padding:12px 16px;"><span class="t">Bug &mdash; ID regex</span>ID scraper missed embedded digits like <span class="mono">B2B-01</span>. Pattern corrected to match.</div>
+        </div>
+        <div class="frag pop" style="align-self:center;">
+          <div class="card" style="padding:14px 26px;background:#10151C;border-color:#10151C;">
+            <span class="mono" style="color:#8FE0B8;font-size:16px;font-weight:600;">$ python Testbench/audit_icarus_2026-09-12/run_all.py</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <div class="frag grow card" style="flex:1;text-align:center;padding:14px;">
+            <div class="stat"><div class="k">Stages, end-to-end</div><div class="v gradient" data-count="4">0</div></div>
+          </div>
+          <div class="frag grow card" style="flex:1;text-align:center;padding:14px;">
+            <div class="stat"><div class="k">Passed</div><div class="v" style="color:var(--good);" data-count="45">0</div></div>
+          </div>
+          <div class="frag grow card" style="flex:1;text-align:center;padding:14px;">
+            <div class="stat"><div class="k">Passed*</div><div class="v" data-count="1">0</div></div>
+          </div>
+          <div class="frag grow card" style="flex:1;text-align:center;padding:14px;">
+            <div class="stat"><div class="k">Failed / Blocked</div><div class="v" style="color:var(--good);">0 / 0</div></div>
+          </div>
+        </div>
+        <div class="frag rise" style="text-align:center;">
+          <span class="chip" style="background:var(--good-bg);color:var(--good);border-color:var(--good);font-size:13.5px;padding:7px 16px;">Unit tests &middot; FIFO/AXI checks &middot; golden-model diffs &middot; spreadsheet write-back &mdash; one run, fully reproducible</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 12 — IMPLEMENTATION RESULTS ============ -->
+    <section class="slide">
+      <div class="eyebrow"><span class="num">07</span><span class="label">Synthesis, Timing &amp; Power</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Routed. Not estimated.</h2>
+      <div class="content" style="gap:18px;">
+        <div style="display:flex;gap:16px;">
+          <div class="frag left card" style="flex:1;">
+            <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">UTILIZATION</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">LUT</span><span class="stat v" style="font-size:19px;" data-count="1605">0</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">FF</span><span class="stat v" style="font-size:19px;" data-count="1288">0</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">DSP / BRAM</span><span class="stat v" style="font-size:19px;color:var(--good);">0 / 1.0</span></div>
+          </div>
+          <div class="frag rise card" style="flex:1;">
+            <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">TIMING &middot; 20 MHz</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">WNS</span><span class="stat v" style="font-size:19px;color:var(--good);" data-count="32.627" data-decimals="3" data-prefix="+" data-suffix=" ns">+0 ns</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">Failing endpoints</span><span class="stat v" style="font-size:19px;color:var(--good);">0</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">Est. Fmax</span><span class="stat v" style="font-size:19px;" data-count="57.6" data-decimals="1" data-suffix=" MHz">0 MHz</span></div>
+          </div>
+          <div class="frag right card" style="flex:1;">
+            <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">POWER</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">Total</span><span class="stat v gradient" style="font-size:19px;" data-count="0.122" data-decimals="3" data-suffix=" W">0 W</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">Dynamic</span><span class="stat v" style="font-size:19px;">0.051 W</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">Static</span><span class="stat v" style="font-size:19px;">0.070 W</span></div>
+          </div>
+        </div>
+        <div class="frag grow">
+          <div class="mono" style="font-size:11px;color:var(--ink-faint);margin-bottom:5px;">SLACK AT 20 MHz (50 ns PERIOD)</div>
+          <div style="height:26px;background:var(--code-bg);border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;position:relative;">
+            <div style="height:100%;width:34.7%;background:linear-gradient(90deg,#2A54FF,#0E8F63);"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;padding-left:10px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;">17.4 ns used &middot; +32.6 ns margin</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 13 — FOM DERIVATION ============ -->
+    <section class="slide">
+      <div class="blob b1"></div><div class="blob b2"></div>
+      <div class="eyebrow"><span class="num">08</span><span class="label">Figure of Merit</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">One formula. One number.</h2>
+      <div class="content" style="justify-content:center;align-items:center;text-align:center;gap:18px;">
+        <div class="frag rise mono" style="font-size:20px;color:var(--ink-soft);">FoM = Throughput / ( Power &times; ( LUT + 50&middot;DSP + 100&middot;BRAM ) )</div>
+        <div class="frag rise mono" style="font-size:22px;">2 / ( 0.122 &times; ( 1605 + 0 + 100 ) )</div>
+        <div class="frag rise mono" style="font-size:22px;">2 / 208.01</div>
+        <div class="frag pop" style="margin-top:6px;">
+          <div class="mono" style="font-size:72px;font-weight:700;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="9.61" data-decimals="2" data-prefix="" data-suffix="&times;10&minus;&sup3;">0.00</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 13.5 — TEAM, REPOSITORY & WORKFLOW ============ -->
+    <section class="slide">
+      <div class="blob b1"></div>
+      <div class="eyebrow"><span class="num">09</span><span class="label">Team, Repository &amp; Workflow</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Built solo. Tracked properly.</h2>
+      <div class="content" style="gap:18px;">
+        <div style="display:flex;gap:16px;">
+          <div class="frag left card" style="flex:1.1;padding:18px 20px;">
+            <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">TEAM SILICON MINDS</div>
+            <div style="font-size:15px;line-height:1.5;color:var(--ink-soft);">Started as a 3-person team. Two teammates departed early in the competition &mdash; before the architecture was settled. Every design decision, all RTL, and all verification from that point on, including everything in this deck, was done solo.</div>
+          </div>
+          <div class="frag right card" style="flex:.9;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;gap:10px;">
+            <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);">REPOSITORY</div>
+            <div class="chip mono" style="align-self:flex-start;font-size:14px;padding:8px 14px;background:#10151C;color:#fff;border-color:#10151C;">github.com/basel-sh/CNN_Accelerator</div>
+            <div style="font-size:12.5px;color:var(--ink-soft);">RTL &middot; Testbench &middot; Python golden model &middot; Reports &middot; Documentation</div>
+          </div>
+        </div>
+        <div class="frag pop card" style="padding:16px 22px;">
+          <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:10px;">BRANCHING AT THE OPTIMIZATION STAGE</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="chip mono">master</span>
+            <span style="color:var(--ink-faint);">&mdash; verified baseline, routed &amp; reported</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;">
+            <span class="chip mono" style="border-color:var(--accent-b);color:var(--accent-b);">aggressive-2px-fom</span>
+            <span style="color:var(--ink-soft);">&mdash; MP4 (4-DSP) tried, timing failed &middot; MP3 (3-DSP) started, unfinished &middot; zero-DSP <span class="mono">top_2px</span> synthesized &amp; adopted</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.5;">The risky FoM experiment was kept off <span class="mono">master</span> until it either paid off or was rejected &mdash; recorded contemporaneously in <span class="mono">Documentation/Aggressive2px.md</span>, not reconstructed afterward. Once solo, there was no second reviewer for a PR cycle, so later fixes shipped as a scoped, single-author commit sequence, each checked against the full regression before the next.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 14 — COMPARISON + CONCLUSION ============ -->
+    <section class="slide">
+      <div class="eyebrow"><span class="num">10</span><span class="label">Result &amp; Closing</span></div>
+      <div class="rule"></div>
+      <h2 class="headline" style="font-size:32px;">Built, measured, and it held up.</h2>
+      <div class="content" style="gap:16px;">
+        <svg viewBox="0 0 640 190" width="60%" style="align-self:center;" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+          <style>.slide svg .frag{transform-box:fill-box;transform-origin:50% 100%;}</style>
+          <defs><linearGradient id="gg14" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2A54FF"/><stop offset="55%" stop-color="#8B3FFB"/><stop offset="100%" stop-color="#FF3D96"/></linearGradient></defs>
+          <line x1="60" y1="20" x2="60" y2="150" stroke="#C3CCD8" stroke-width="1"/>
+          <line x1="60" y1="150" x2="610" y2="150" stroke="#C3CCD8" stroke-width="1"/>
+          <text x="52" y="24" text-anchor="end" font-size="9" fill="#8B94A3">12e-3</text>
+          <text x="52" y="150" text-anchor="end" font-size="9" fill="#8B94A3">0</text>
+          <g class="frag rise"><rect x="130" y="68.4" width="90" height="81.6" fill="#C3CCD8"/><text x="175" y="60" text-anchor="middle" font-size="10" font-weight="700" fill="#4E5867">7.52e-3</text><text x="175" y="168" text-anchor="middle" font-size="9" fill="#4E5867">1px baseline</text></g>
+          <g class="frag rise"><rect x="280" y="60.2" width="90" height="89.8" fill="none" stroke="#B0281F" stroke-width="1.8" stroke-dasharray="4 3"/><text x="325" y="52" text-anchor="middle" font-size="10" font-weight="700" fill="#B0281F">8.27e-3</text><text x="325" y="168" text-anchor="middle" font-size="9" fill="#B0281F">4-DSP (invalid)</text></g>
+          <g class="frag grow"><rect x="430" y="45.7" width="90" height="104.3" fill="url(#gg14)"/><text x="475" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="#10151C">9.61e-3</text><text x="475" y="168" text-anchor="middle" font-size="9" font-weight="700" fill="#0B5E42">2px zero-DSP</text></g>
+        </svg>
+        <div class="frag rise" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <span class="chip">All 10 requirements met</span>
+          <span class="chip">2&times; the throughput bonus</span>
+          <span class="chip">+46.6% FoM vs. baseline</span>
+        </div>
+        <div class="frag pop" style="text-align:center;margin-top:6px;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:30px;">Thank you.</div>
+          <div class="mono" style="font-size:13px;color:var(--ink-soft);margin-top:6px;">Team Silicon Minds &middot; Basel &middot; github.com/basel-sh/CNN_Accelerator</div>
+        </div>
+      </div>
+    </section>
+
+    </div>
+    <div id="clickCatcher"></div>
+    <div class="chrome-footer">
+      <span class="brand">SILICON MINDS &middot; CNN CONVOLUTION ACCELERATOR</span>
+      <div class="scrubber" id="scrubber">
+        <div class="track"><div class="fill" id="progFill"></div></div>
+        <div class="ticks" id="ticks"></div>
+        <div class="scrub-tip" id="scrubTip"></div>
+      </div>
+      <span class="count mono tabular" id="slideCount">01 / 14</span>
+    </div>
+  </div>
+</div>
+<div class="navbtn" id="prevBtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+<div class="navbtn" id="nextBtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+<div class="hint" id="hint">click / → to advance &middot; ← back</div>
+
+<script>
+/* ================= deck engine ================= */
+const state = { slide: 0, frag: -1 };
+let SLIDES = [];
+
+function fitStage(){
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const scale = Math.min(vw/1280, vh/720) * 0.98;
+  document.getElementById('stage').style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', fitStage);
+
+function currentSlideEl(){ return SLIDES[state.slide]; }
+function fragsOf(el){ return Array.from(el.querySelectorAll('.frag')); }
+
+function renderSlide(resetFrag, dir){
+  SLIDES.forEach((s,i)=>{
+    const wasActive = s.classList.contains('active');
+    const isActive = i===state.slide;
+    s.classList.toggle('active', isActive);
+    if(wasActive && !isActive){ s.classList.toggle('leaving-back', dir==='back'); }
+    if(isActive){ s.classList.remove('leaving-back'); }
+  });
+  const el = currentSlideEl();
+  const frags = fragsOf(el);
+  if(resetFrag === 'end'){ state.frag = frags.length-1; }
+  else if(resetFrag === 'start'){ state.frag = -1; }
+  frags.forEach((f,i)=>{
+    const on = i <= state.frag;
+    f.classList.toggle('in', on);
+    if(on) triggerSpecial(f);
+  });
+  document.getElementById('progFill').style.width = ((state.slide+1)/SLIDES.length*100)+'%';
+  document.getElementById('slideCount').textContent = String(state.slide+1).padStart(2,'0')+' / '+String(SLIDES.length).padStart(2,'0');
+  document.getElementById('prevBtn').classList.toggle('disabled', state.slide===0 && state.frag===-1);
+  document.getElementById('nextBtn').classList.toggle('disabled', state.slide===SLIDES.length-1 && state.frag===frags.length-1);
+}
+
+function triggerSpecial(f){
+  if(f.dataset.done==='1') return;
+  f.dataset.done='1';
+  const counters = f.querySelectorAll('[data-count]');
+  counters.forEach(c=>animateCount(c));
+}
+
+function animateCount(el){
+  const target = parseFloat(el.dataset.count);
+  const decimals = el.dataset.decimals ? parseInt(el.dataset.decimals) : 0;
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+  const dur = 900; const t0 = performance.now();
+  function tick(t){
+    let p = Math.min(1,(t-t0)/dur);
+    p = 1 - Math.pow(1-p, 3);
+    const v = target*p;
+    el.textContent = prefix + v.toFixed(decimals) + suffix;
+    if(p<1) requestAnimationFrame(tick);
+    else el.textContent = prefix + target.toFixed(decimals) + suffix;
+  }
+  requestAnimationFrame(tick);
+}
+
+function next(){
+  const el = currentSlideEl();
+  const frags = fragsOf(el);
+  if(state.frag < frags.length-1){ state.frag++; renderSlide(undefined,'fwd'); }
+  else if(state.slide < SLIDES.length-1){ state.slide++; renderSlide('start','fwd'); }
+  hideHint();
+}
+function prev(){
+  if(state.frag > -1){ state.frag--; renderSlide(undefined,'back'); }
+  else if(state.slide > 0){ state.slide--; renderSlide('end','back'); }
+  hideHint();
+}
+let hinted=false;
+function hideHint(){ if(!hinted){ hinted=true; document.getElementById('hint').style.opacity='0'; } }
+
+document.getElementById('nextBtn').addEventListener('click', next);
+document.getElementById('prevBtn').addEventListener('click', prev);
+document.getElementById('clickCatcher').addEventListener('click', next);
+window.addEventListener('keydown', (e)=>{
+  if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){ e.preventDefault(); next(); }
+  else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+});
+
+/* ================= timeline scrubber: hover to jump to any slide ================= */
+function slideTitle(el, i){
+  const label = el.querySelector('.eyebrow .label');
+  if(label && label.textContent.trim()) return label.textContent.trim();
+  const head = el.querySelector('h2.headline');
+  if(head && head.textContent.trim()) return head.textContent.trim().replace(/\s+/g,' ');
+  return 'Slide '+(i+1);
+}
+
+function buildTicks(){
+  const wrap = document.getElementById('ticks');
+  wrap.innerHTML = '';
+  SLIDES.forEach((el,i)=>{
+    if(i===0) return; // no tick at the very start
+    const t = document.createElement('div');
+    t.className = 'tick';
+    t.style.left = (i/SLIDES.length*100)+'%';
+    wrap.appendChild(t);
+  });
+}
+
+function indexFromClientX(clientX){
+  const track = scrubber.querySelector('.track');
+  const rect = track.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  return Math.min(SLIDES.length-1, Math.floor(ratio * SLIDES.length));
+}
+
+let scrubber, scrubTip;
+function scrubTo(clientX){
+  const idx = indexFromClientX(clientX);
+  const rect = scrubber.getBoundingClientRect();
+  const tipRatio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  scrubTip.textContent = String(idx+1).padStart(2,'0')+' — '+slideTitle(SLIDES[idx], idx);
+  scrubTip.style.left = (tipRatio*100)+'%';
+  if(idx !== state.slide){
+    state.slide = idx;
+    renderSlide('end'); // jump straight to the fully-revealed slide, no fragment stepping
+  }
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  SLIDES = Array.from(document.querySelectorAll('.slide'));
+  scrubber = document.getElementById('scrubber');
+  scrubTip = document.getElementById('scrubTip');
+  fitStage();
+  buildTicks();
+  renderSlide('start');
+  setTimeout(()=>{ document.getElementById('hint').style.opacity = hinted?'0':'1'; }, 600);
+
+  scrubber.addEventListener('mousemove', (e)=>{ scrubTo(e.clientX); hideHint(); });
+  scrubber.addEventListener('click', (e)=>{ scrubTo(e.clientX); hideHint(); });
+  scrubber.addEventListener('touchstart', (e)=>{ if(e.touches[0]) scrubTo(e.touches[0].clientX); hideHint(); }, {passive:true});
+  scrubber.addEventListener('touchmove', (e)=>{ if(e.touches[0]) scrubTo(e.touches[0].clientX); }, {passive:true});
+});
+</script>
+</body>
+</html>

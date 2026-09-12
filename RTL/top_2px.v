@@ -100,8 +100,21 @@ module top_2px #(
         .Left_Acc_Out(Mac_Out0), .Right_Acc_Out(Mac_Out1)
     );
 
-    assign Out_Valid = Mac_Valid_Out && Out_Rd_En;
-    assign Out_Full  = 1'b0;
-    assign Out_Data0 = (Relu_En && Mac_Out0[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out0;
-    assign Out_Data1 = (Relu_En && Mac_Out1[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out1;
+    // FIX 2026-09-12: previously Out_Valid = Mac_Valid_Out && Out_Rd_En and
+    // Out_Full was hard-wired 1'b0 - there was no queue at all, so a result
+    // computed while Out_Rd_En=0 was silently dropped, never Out_Full, never
+    // held for a later read (confirmed by simulation - ERR-04 / TIM-06).
+    // A 16-deep output FIFO now sits between mac_pair.v and the ports, so
+    // unread results are queued (and Out_Full genuinely asserts once full)
+    // instead of being lost.
+    wire signed [Acc_W-1:0] Relu_Data0 = (Relu_En && Mac_Out0[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out0;
+    wire signed [Acc_W-1:0] Relu_Data1 = (Relu_En && Mac_Out1[Acc_W-1]) ? {Acc_W{1'b0}} : Mac_Out1;
+
+    fifo_pair #(.DATA_W(Acc_W), .DEPTH(16)) U_Out_Fifo (
+        .Clk(Clk), .Rst_N(Rst_N),
+        .Wr_En(Mac_Valid_Out), .Wdata0(Relu_Data0), .Wdata1(Relu_Data1),
+        .Rd_En(Out_Rd_En),
+        .Rdata0(Out_Data0), .Rdata1(Out_Data1),
+        .Empty(), .Full(Out_Full), .Valid(Out_Valid)
+    );
 endmodule

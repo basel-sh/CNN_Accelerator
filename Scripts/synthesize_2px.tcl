@@ -38,5 +38,5 @@ puts "  Utilization: Reports/utilization/utilization_impl.txt"
 puts "  Timing:      Reports/timing/timing_impl.txt"
 puts "  Power:       Reports/power/power_impl.txt"
 puts "=============================================================================="
-close_project
+
 cd $repo_root

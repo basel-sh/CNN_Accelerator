@@ -66,42 +66,23 @@ module mac_pair #(
         end
     end
 
-    // Explicit signed extension to Acc_W before the balanced reductions.
-    wire signed [Acc_W-1:0] L0 = {{(Acc_W-Prod_W){Left_Prod_Reg[0][Prod_W-1]}}, Left_Prod_Reg[0]};
-    wire signed [Acc_W-1:0] L1 = {{(Acc_W-Prod_W){Left_Prod_Reg[1][Prod_W-1]}}, Left_Prod_Reg[1]};
-    wire signed [Acc_W-1:0] L2 = {{(Acc_W-Prod_W){Left_Prod_Reg[2][Prod_W-1]}}, Left_Prod_Reg[2]};
-    wire signed [Acc_W-1:0] L3 = {{(Acc_W-Prod_W){Left_Prod_Reg[3][Prod_W-1]}}, Left_Prod_Reg[3]};
-    wire signed [Acc_W-1:0] L4 = {{(Acc_W-Prod_W){Left_Prod_Reg[4][Prod_W-1]}}, Left_Prod_Reg[4]};
-    wire signed [Acc_W-1:0] L5 = {{(Acc_W-Prod_W){Left_Prod_Reg[5][Prod_W-1]}}, Left_Prod_Reg[5]};
-    wire signed [Acc_W-1:0] L6 = {{(Acc_W-Prod_W){Left_Prod_Reg[6][Prod_W-1]}}, Left_Prod_Reg[6]};
-    wire signed [Acc_W-1:0] L7 = {{(Acc_W-Prod_W){Left_Prod_Reg[7][Prod_W-1]}}, Left_Prod_Reg[7]};
-    wire signed [Acc_W-1:0] L8 = {{(Acc_W-Prod_W){Left_Prod_Reg[8][Prod_W-1]}}, Left_Prod_Reg[8]};
-
-    wire signed [Acc_W-1:0] R0 = {{(Acc_W-Prod_W){Right_Prod_Reg[0][Prod_W-1]}}, Right_Prod_Reg[0]};
-    wire signed [Acc_W-1:0] R1 = {{(Acc_W-Prod_W){Right_Prod_Reg[1][Prod_W-1]}}, Right_Prod_Reg[1]};
-    wire signed [Acc_W-1:0] R2 = {{(Acc_W-Prod_W){Right_Prod_Reg[2][Prod_W-1]}}, Right_Prod_Reg[2]};
-    wire signed [Acc_W-1:0] R3 = {{(Acc_W-Prod_W){Right_Prod_Reg[3][Prod_W-1]}}, Right_Prod_Reg[3]};
-    wire signed [Acc_W-1:0] R4 = {{(Acc_W-Prod_W){Right_Prod_Reg[4][Prod_W-1]}}, Right_Prod_Reg[4]};
-    wire signed [Acc_W-1:0] R5 = {{(Acc_W-Prod_W){Right_Prod_Reg[5][Prod_W-1]}}, Right_Prod_Reg[5]};
-    wire signed [Acc_W-1:0] R6 = {{(Acc_W-Prod_W){Right_Prod_Reg[6][Prod_W-1]}}, Right_Prod_Reg[6]};
-    wire signed [Acc_W-1:0] R7 = {{(Acc_W-Prod_W){Right_Prod_Reg[7][Prod_W-1]}}, Right_Prod_Reg[7]};
-    wire signed [Acc_W-1:0] R8 = {{(Acc_W-Prod_W){Right_Prod_Reg[8][Prod_W-1]}}, Right_Prod_Reg[8]};
-
-    wire signed [Acc_W-1:0] L01   = L0 + L1;
-    wire signed [Acc_W-1:0] L23   = L2 + L3;
-    wire signed [Acc_W-1:0] L45   = L4 + L5;
-    wire signed [Acc_W-1:0] L67   = L6 + L7;
-    wire signed [Acc_W-1:0] L0123 = L01 + L23;
-    wire signed [Acc_W-1:0] L4567 = L45 + L67;
-    wire signed [Acc_W-1:0] L_Sum = L0123 + L4567 + L8;
-
-    wire signed [Acc_W-1:0] R01   = R0 + R1;
-    wire signed [Acc_W-1:0] R23   = R2 + R3;
-    wire signed [Acc_W-1:0] R45   = R4 + R5;
-    wire signed [Acc_W-1:0] R67   = R6 + R7;
-    wire signed [Acc_W-1:0] R0123 = R01 + R23;
-    wire signed [Acc_W-1:0] R4567 = R45 + R67;
-    wire signed [Acc_W-1:0] R_Sum = R0123 + R4567 + R8;
+    // Generic N-term reduction (FIX 2026-09-12: the previous version hardcoded
+    // this stage to exactly 9 terms (L0..L8 / R0..R8), so for any K != 3
+    // (N != 9) it silently dropped every product past index 8 and produced
+    // wrong sums with no error - confirmed by K=5 simulation (FUNC-07).
+    // This loop-based reduction sums all N = K*K sign-extended products, so
+    // it is correct for any K the window_generator_2px.v / kernel_memory.v
+    // already generalize to.
+    reg signed [Acc_W-1:0] L_Sum_Comb, R_Sum_Comb;
+    integer J;
+    always @(*) begin
+        L_Sum_Comb = {Acc_W{1'b0}};
+        R_Sum_Comb = {Acc_W{1'b0}};
+        for (J = 0; J < N; J = J + 1) begin
+            L_Sum_Comb = L_Sum_Comb + {{(Acc_W-Prod_W){Left_Prod_Reg[J][Prod_W-1]}}, Left_Prod_Reg[J]};
+            R_Sum_Comb = R_Sum_Comb + {{(Acc_W-Prod_W){Right_Prod_Reg[J][Prod_W-1]}}, Right_Prod_Reg[J]};
+        end
+    end
 
     // Stage 2: one-cycle output register for both lanes.
     always @(posedge Clk or negedge Rst_N) begin
@@ -111,8 +92,8 @@ module mac_pair #(
             Right_Acc_Out <= {Acc_W{1'b0}};
         end else begin
             Valid_Out     <= Valid_D1;
-            Left_Acc_Out  <= L_Sum;
-            Right_Acc_Out <= R_Sum;
+            Left_Acc_Out  <= L_Sum_Comb;
+            Right_Acc_Out <= R_Sum_Comb;
         end
     end
 endmodule
