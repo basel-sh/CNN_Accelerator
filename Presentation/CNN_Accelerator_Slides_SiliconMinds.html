@@ -167,7 +167,7 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
         <p class="frag rise sub" style="font-size:19px;margin-top:18px;max-width:640px;">A streaming, zero-DSP N&times;N convolution engine for edge-AI vision, two output pixels every clock, one clock domain, timing-closed with room to spare.</p>
         <div class="frag pop" style="margin-top:30px;display:flex;gap:14px;align-items:center;">
           <div class="card" style="padding:14px 22px;display:inline-flex;gap:26px;align-items:baseline;">
-            <div class="stat"><div class="k">Figure of Merit</div><div class="v gradient" style="font-size:30px;" data-count="1.74" data-decimals="2" data-suffix="&times;10&minus;&sup2;">0.00</div></div>
+            <div class="stat"><div class="k">Figure of Merit</div><div class="v gradient" style="font-size:30px;" data-count="1.78" data-decimals="2" data-suffix="&times;10&minus;&sup2;">0.00</div></div>
             <div class="stat"><div class="k">Throughput</div><div class="v" style="font-size:30px;">2<span class="u">px/cyc</span></div></div>
             <div class="stat"><div class="k">DSP</div><div class="v" style="font-size:30px;">0</div></div>
           </div>
@@ -408,13 +408,13 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
         <div class="frag pop card" style="flex:1.15;display:flex;flex-direction:column;gap:8px;border-color:var(--good);background:linear-gradient(180deg,#fff,#F3FBF7);box-shadow:0 10px 30px rgba(14,143,99,.18);">
           <span class="status done"><span class="dot"></span>adopted &amp; bit-width optimized</span>
           <div style="font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px;">2px zero-DSP (final)</div>
-          <div class="mono" style="font-size:12.5px;color:var(--ink-soft);">LUT 918 &middot; FF 1044 &middot; DSP 0</div>
-          <div class="mono" style="font-size:12.5px;color:var(--good);">WNS +34.641ns, PASS</div>
-          <div class="mono gradient" style="font-size:30px;font-weight:700;margin-top:auto;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="1.74" data-decimals="2" data-suffix="e&minus;2">0e-2</div>
+          <div class="mono" style="font-size:12.5px;color:var(--ink-soft);">LUT 896 &middot; FF 1049 &middot; DSP 0</div>
+          <div class="mono" style="font-size:12.5px;color:var(--good);">WNS +33.802ns, PASS</div>
+          <div class="mono gradient" style="font-size:30px;font-weight:700;margin-top:auto;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="1.78" data-decimals="2" data-suffix="e&minus;2">0e-2</div>
         </div>
       </div>
       <div class="frag rise" style="text-align:center;margin-top:16px;">
-        <span class="chip" style="background:var(--good-bg);color:var(--good);border-color:var(--good);font-size:14px;padding:8px 18px;">+131.3% FoM over the 1px baseline, after kernel-scoped bit-width optimization (1605&rarr;918 LUT)</span>
+        <span class="chip" style="background:var(--good-bg);color:var(--good);border-color:var(--good);font-size:14px;padding:8px 18px;">+136.3% FoM over the 1px baseline, after kernel-scoped bit-width optimization (1605&rarr;896 LUT)</span>
       </div>
     </section>
 
@@ -474,7 +474,7 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
           </div>
         </div>
         <div class="frag pop">
-          <div class="callout good" style="max-width:920px;"><span class="t">Overflow-proof by construction, with margin to spare</span>32,768 &gt; 18,360 for <em>every</em> valid 4-bit signed kernel (|coeff|&le;8) &times; 8-bit unsigned pixel combination across the 9-term MAC sum. Kernel_W was tightened from 8b to 4b and Acc_W from 20b to 16b once the coefficient range was proven, cutting LUTs 1605&rarr;918 with no saturation or rounding logic needed.</div>
+          <div class="callout good" style="max-width:920px;"><span class="t">Overflow-proof by construction, with margin to spare</span>32,768 &gt; 18,360 for <em>every</em> valid 4-bit signed kernel (|coeff|&le;8) &times; 8-bit unsigned pixel combination across the 9-term MAC sum. Kernel_W was tightened from 8b to 4b and Acc_W from 20b to 16b once the coefficient range was proven, cutting LUTs 1605&rarr;896 with no saturation or rounding logic needed.</div>
         </div>
       </div>
     </section>
@@ -591,15 +591,15 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
         <div style="display:flex;gap:16px;">
           <div class="frag left card" style="flex:1;">
             <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">UTILIZATION</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">LUT</span><span class="stat v" style="font-size:19px;" data-count="918">0</span></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">FF</span><span class="stat v" style="font-size:19px;" data-count="1044">0</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">LUT</span><span class="stat v" style="font-size:19px;" data-count="896">0</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">FF</span><span class="stat v" style="font-size:19px;" data-count="1049">0</span></div>
             <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">DSP / BRAM</span><span class="stat v" style="font-size:19px;color:var(--good);">0 / 1.0</span></div>
           </div>
           <div class="frag rise card" style="flex:1;">
             <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">TIMING &middot; 20 MHz</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">WNS</span><span class="stat v" style="font-size:19px;color:var(--good);" data-count="34.641" data-decimals="3" data-prefix="+" data-suffix=" ns">+0 ns</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">WNS</span><span class="stat v" style="font-size:19px;color:var(--good);" data-count="33.802" data-decimals="3" data-prefix="+" data-suffix=" ns">+0 ns</span></div>
             <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13.5px;color:var(--ink-soft);">Failing endpoints</span><span class="stat v" style="font-size:19px;color:var(--good);">0</span></div>
-            <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">Est. Fmax</span><span class="stat v" style="font-size:19px;" data-count="65.1" data-decimals="1" data-suffix=" MHz">0 MHz</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:var(--ink-soft);">Est. Fmax</span><span class="stat v" style="font-size:19px;" data-count="61.7" data-decimals="1" data-suffix=" MHz">0 MHz</span></div>
           </div>
           <div class="frag right card" style="flex:1;">
             <div class="mono" style="font-size:11px;letter-spacing:1.5px;color:var(--ink-faint);margin-bottom:8px;">POWER</div>
@@ -610,8 +610,8 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
         <div class="frag grow">
           <div class="mono" style="font-size:11px;color:var(--ink-faint);margin-bottom:5px;">SLACK AT 20 MHz (50 ns PERIOD)</div>
           <div style="height:26px;background:var(--code-bg);border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;position:relative;">
-            <div style="height:100%;width:30.7%;background:linear-gradient(90deg,#2A54FF,#0E8F63);"></div>
-            <div style="position:absolute;inset:0;display:flex;align-items:center;padding-left:10px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;">15.4 ns used &middot; +34.6 ns margin</div>
+            <div style="height:100%;width:32.4%;background:linear-gradient(90deg,#2A54FF,#0E8F63);"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;padding-left:10px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;">16.2 ns used &middot; +33.8 ns margin</div>
           </div>
         </div>
       </div>
@@ -625,10 +625,10 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
       <h2 class="headline" style="font-size:32px;">One formula. One number.</h2>
       <div class="content" style="justify-content:center;align-items:center;text-align:center;gap:18px;">
         <div class="frag rise mono" style="font-size:20px;color:var(--ink-soft);">FoM = Throughput / ( Power &times; ( LUT + 50&middot;DSP + 100&middot;BRAM ) )</div>
-        <div class="frag rise mono" style="font-size:22px;">2 / ( 0.113 &times; ( 918 + 0 + 100 ) )</div>
-        <div class="frag rise mono" style="font-size:22px;">2 / 115.03</div>
+        <div class="frag rise mono" style="font-size:22px;">2 / ( 0.113 &times; ( 896 + 0 + 100 ) )</div>
+        <div class="frag rise mono" style="font-size:22px;">2 / 112.55</div>
         <div class="frag pop" style="margin-top:6px;">
-          <div class="mono" style="font-size:72px;font-weight:700;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="1.74" data-decimals="2" data-prefix="" data-suffix="&times;10&minus;&sup2;">0.00</div>
+          <div class="mono" style="font-size:72px;font-weight:700;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;" data-count="1.78" data-decimals="2" data-prefix="" data-suffix="&times;10&minus;&sup2;">0.00</div>
         </div>
       </div>
     </section>
@@ -681,12 +681,12 @@ table.dtable td.num{text-align:right;font-family:var(--font-mono);font-variant-n
           <text x="52" y="150" text-anchor="end" font-size="9" fill="#8B94A3">0</text>
           <g class="frag rise"><rect x="130" y="95.7" width="90" height="54.3" fill="#C3CCD8"/><text x="175" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#4E5867">7.52e-3</text><text x="175" y="168" text-anchor="middle" font-size="9" fill="#4E5867">1px baseline</text></g>
           <g class="frag rise"><rect x="280" y="90.3" width="90" height="59.7" fill="none" stroke="#B0281F" stroke-width="1.8" stroke-dasharray="4 3"/><text x="325" y="82" text-anchor="middle" font-size="10" font-weight="700" fill="#B0281F">8.27e-3</text><text x="325" y="168" text-anchor="middle" font-size="9" fill="#B0281F">4-DSP (invalid)</text></g>
-          <g class="frag grow"><rect x="430" y="24.4" width="90" height="125.6" fill="url(#gg14)"/><text x="475" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#10151C">1.74e-2</text><text x="475" y="168" text-anchor="middle" font-size="9" font-weight="700" fill="#0B5E42">Final (bit-width opt.)</text></g>
+          <g class="frag grow"><rect x="430" y="24.4" width="90" height="125.6" fill="url(#gg14)"/><text x="475" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#10151C">1.78e-2</text><text x="475" y="168" text-anchor="middle" font-size="9" font-weight="700" fill="#0B5E42">Final (bit-width opt.)</text></g>
         </svg>
         <div class="frag rise" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <span class="chip">All 10 requirements met</span>
           <span class="chip">2&times; the throughput bonus</span>
-          <span class="chip">+131.3% FoM vs. baseline</span>
+          <span class="chip">+136.3% FoM vs. baseline</span>
         </div>
         <div class="frag pop" style="text-align:center;margin-top:6px;">
           <div style="font-family:var(--font-display);font-weight:700;font-size:30px;">Thank you.</div>

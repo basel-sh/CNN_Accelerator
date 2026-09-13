@@ -1,0 +1,35 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
+| Date         : Mon Sep 14 00:21:07 2026
+| Host         : DESKTOP-H2NORAN running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file ./Reports/utilization/utilization_hier.txt
+| Design       : top_2px
+| Device       : xc7a35tcpg236-1
+| Speed File   : -1
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++----------------+----------------------+------------+------------+---------+------+------+--------+--------+------------+
+|    Instance    |        Module        | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++----------------+----------------------+------------+------------+---------+------+------+--------+--------+------------+
+| top_2px        |                (top) |        896 |        864 |       0 |   32 | 1049 |      0 |      2 |          0 |
+|   (top_2px)    |                (top) |          0 |          0 |       0 |    0 |    3 |      0 |      0 |          0 |
+|   U_Kernel_Mem |        kernel_memory |        113 |        113 |       0 |    0 |   36 |      0 |      0 |          0 |
+|   U_Line_Buf   |      line_buffer_2px |         48 |         16 |       0 |   32 |   79 |      0 |      0 |          0 |
+|   U_Mac_Pair   |             mac_pair |        125 |        125 |       0 |    0 |  268 |      0 |      0 |          0 |
+|   U_Out_Fifo   |            fifo_pair |        170 |        170 |       0 |    0 |  522 |      0 |      0 |          0 |
+|   U_Win_Gen    | window_generator_2px |        442 |        442 |       0 |    0 |   96 |      0 |      0 |          0 |
++----------------+----------------------+------------+------------+---------+------+------+--------+--------+------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+
