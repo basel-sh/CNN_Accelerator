@@ -10,7 +10,7 @@
 //==============================================================================
 `timescale 1ns/1ps
 module tb_top_2px;
-    localparam Pixel_W=8, Kernel_W=8, Acc_W=20, Img_W=32, Img_H=32, K=3;
+    localparam Pixel_W=8, Kernel_W=4, Acc_W=16, Img_W=32, Img_H=32, K=3;
     localparam Img_Addrw=10, Kidxw=4;
     localparam Total_Pix = Img_W*Img_H;
     localparam Num_K = K*K;

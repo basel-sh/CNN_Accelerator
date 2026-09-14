@@ -7,13 +7,18 @@ image/kernel pair and compares it element-by-element against the RTL
 simulation's captured output (a $readmemh-style hex file, two's complement,
 written by Testbench/tb_top.v).
 
-Usage:
+Usage (matches the current Kernel_W=4/Acc_W=16 top_2px.v build - see
+top_2px.tcl's `set_property generic {Kernel_W=4 Acc_W=16}`):
+    python Python/verify.py
+
+All flags are optional and default to that build's paths/widths; override
+any of them to check a different run, e.g.:
     python Python/verify.py \\
         --image Images/input_32x32.mem \\
         --kernel Images/kernels/edge_3x3.mem \\
         --rtl-output sim/rtl_output.mem \\
         --img-size 32 32 --k 3 \\
-        --pixel-width 8 --kernel-width 8 --acc-width 20 [--relu]
+        --pixel-width 8 --kernel-width 4 --acc-width 16 [--relu]
 
 Exit code 0 = PASS, 1 = FAIL (standard CI convention).
 """
@@ -53,14 +58,14 @@ def compare_outputs(Golden, Rtl_Output, Tolerance=0):
 
 def main():
     Ap = argparse.ArgumentParser(description="Compare RTL simulation output to the Python golden model.")
-    Ap.add_argument("--image", required=True)
-    Ap.add_argument("--kernel", required=True)
-    Ap.add_argument("--rtl-output", required=True)
+    Ap.add_argument("--image", default="Images/input_32x32.mem")
+    Ap.add_argument("--kernel", default="Images/kernels/edge_3x3.mem")
+    Ap.add_argument("--rtl-output", default="sim/rtl_output.mem")
     Ap.add_argument("--img-size", nargs=2, type=int, default=[32, 32], metavar=("H", "W"))
     Ap.add_argument("--k", type=int, default=3)
     Ap.add_argument("--pixel-width", type=int, default=8)
-    Ap.add_argument("--kernel-width", type=int, default=8)
-    Ap.add_argument("--acc-width", type=int, default=20)
+    Ap.add_argument("--kernel-width", type=int, default=4)
+    Ap.add_argument("--acc-width", type=int, default=16)
     Ap.add_argument("--relu", action="store_true")
     Args = Ap.parse_args()
 

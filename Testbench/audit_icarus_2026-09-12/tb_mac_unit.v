@@ -4,7 +4,7 @@
 //==============================================================================
 `timescale 1ns/1ps
 module tb_mac_unit;
-    localparam Pixel_W=8, Kernel_W=8, Acc_W=20, K=3;
+    localparam Pixel_W=8, Kernel_W=4, Acc_W=16, K=3;
     localparam N = K*K;
 
     reg Clk=0, Rst_N=1, Valid_In=0;
@@ -65,7 +65,7 @@ module tb_mac_unit;
         integer j;
         begin
             for (j=0;j<N;j=j+1)
-                Kernel_Flat[(j+1)*Kernel_W-1 -: Kernel_W] = (j==4) ? 8'sd1 : 8'sd0; // center of 3x3 flat index=4
+                Kernel_Flat[(j+1)*Kernel_W-1 -: Kernel_W] = (j==4) ? 4'sd1 : 4'sd0; // center of 3x3 flat index=4
         end
     endtask
 
@@ -90,29 +90,32 @@ module tb_mac_unit;
         // FUNC-08(a): window=9x1, kernel=center 1 -> Acc=1
         set_window_const(8'd1);
         set_kernel_center_one();
-        run_vector(20'sd1);
+        run_vector(16'sd1);
 
         // FUNC-08(b): window=0..8, kernel=9x1 -> Acc=36
         set_window_seq();
-        set_kernel_const(8'sd1);
-        run_vector(20'sd36);
+        set_kernel_const(4'sd1);
+        run_vector(16'sd36);
 
         // FUNC-08(c): window=9x255, kernel=9x(-1) -> Acc=-2295
         set_window_const(8'd255);
-        set_kernel_const(-8'sd1);
-        run_vector(-20'sd2295);
+        set_kernel_const(-4'sd1);
+        run_vector(-16'sd2295);
 
-        // BND-07: max positive accumulator: image=255(x9), kernel=127(x9) -> 9*255*127=291465
+        // BND-07: max positive accumulator with a signed 4-bit kernel (range
+        // -8..7): image=255(x9), kernel=+7(x9) -> 9*255*7=16065
         set_window_const(8'd255);
-        set_kernel_const(8'sd127);
-        run_vector(291465);
-        check(291465 <= 524287 && 291465 >= -524288, "BND-07: result inside 20-bit signed range, no wraparound");
+        set_kernel_const(4'sd7);
+        run_vector(16065);
+        check(16065 <= 32767 && 16065 >= -32768, "BND-07: result inside 16-bit signed range, no wraparound");
 
-        // BND-08: max negative accumulator: image=255(x9), kernel=-128(x9) -> -9*255*128=-293760
+        // BND-08: max negative accumulator: image=255(x9), kernel=-8(x9)
+        // (most negative signed 4-bit value) -> -9*255*8=-18360, matching
+        // the Section 06 overflow proof (max |sum|=18,360 < 32,768)
         set_window_const(8'd255);
-        set_kernel_const(-8'sd128);
-        run_vector(-293760);
-        check(-293760 <= 524287 && -293760 >= -524288, "BND-08: result inside 20-bit signed range, no wraparound");
+        set_kernel_const(-4'sd8);
+        run_vector(-18360);
+        check(-18360 <= 32767 && -18360 >= -32768, "BND-08: result inside 16-bit signed range, no wraparound");
 
         $display("TB_MAC_UNIT: %0d PASS, %0d FAIL", pass_count, fail_count);
         $finish;

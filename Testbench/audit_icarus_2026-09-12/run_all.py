@@ -68,6 +68,15 @@ from image_generator import generate_test_image, generate_test_kernel
 from golden_model import run_golden_model
 from utilities import quantize_signed, quantize_unsigned, to_twos_complement_hex, from_twos_complement
 
+# Actual synthesized configuration (Vivado_2px/CNN_Accelerator_2px.runs/synth_1/
+# top_2px.tcl: "set_property generic {Kernel_W=4 Acc_W=16} [current_fileset]",
+# confirmed in runme.log). Fixed 2026-09-14: this whole audit previously
+# verified the old general Kernel_W=8/Acc_W=20 config, which is NOT what got
+# synthesized/reported - every width-dependent stimulus/comparison below now
+# uses these two constants so the xlsx reflects the real hardware.
+KERNEL_W = 4
+ACC_W = 16
+
 RESULTS = {}   # Test ID -> True (all evidence for it passed) / False
 
 
@@ -177,9 +186,9 @@ def stage_top_level_check_tests():
     log("\n=== Stage 2/4: FIFO backpressure + AXI-Lite testbenches ===")
     # both need the same 8x8/K=3 stimulus used by the original audit
     img_bp = generate_test_image(8, 8, "random", 505, 8)
-    k_bp = generate_test_kernel(3, "box_blur", 8)
+    k_bp = generate_test_kernel(3, "box_blur", KERNEL_W)
     write_mem(img_bp, MEM / "bp_image.mem", 8, False)
-    write_mem(k_bp, MEM / "bp_kernel.mem", 8, True)
+    write_mem(k_bp, MEM / "bp_kernel.mem", KERNEL_W, True)
 
     jobs = [
         ("tb_backpressure", [SCRIPT_DIR / "tb_backpressure.v"] + RTL_CORE),
@@ -201,7 +210,7 @@ def stage_top_level_check_tests():
 # Stage 3: golden-model comparisons (generic top-level harness + scenarios)
 # ---------------------------------------------------------------------------
 def run_generic(test_id, image, kernel, relu=False, img_w=None, img_h=None, k=None,
-                 pixel_w=8, kernel_w=8, acc_w=20):
+                 pixel_w=8, kernel_w=KERNEL_W, acc_w=ACC_W):
     img_h_, img_w_ = image.shape
     k_ = kernel.shape[0]
     img_w, img_h, k = img_w or img_w_, img_h or img_h_, k or k_
@@ -238,10 +247,10 @@ def run_generic(test_id, image, kernel, relu=False, img_w=None, img_h=None, k=No
     return ok
 
 
-def compare_frame(name, rtl_mem_path, image, kernel, relu=False):
+def compare_frame(name, rtl_mem_path, image, kernel, relu=False, kernel_w=KERNEL_W, acc_w=ACC_W):
     out_h, out_w = image.shape[0] - kernel.shape[0] + 1, image.shape[1] - kernel.shape[1] + 1
-    rtl = read_mem(rtl_mem_path, (out_h, out_w), 20, True)
-    golden = run_golden_model(image, kernel, Apply_Relu=relu)
+    rtl = read_mem(rtl_mem_path, (out_h, out_w), acc_w, True)
+    golden = run_golden_model(image, kernel, Apply_Relu=relu, Kernel_Width=kernel_w, Acc_Width=acc_w)
     mism = int(np.count_nonzero(np.abs(golden.astype(np.int64) - rtl.astype(np.int64))))
     ok = mism == 0
     log(f"  {name}: {golden.size} outputs, {mism} mismatches -> {'PASS' if ok else 'FAIL'}")
@@ -265,30 +274,30 @@ def stage_golden_comparisons():
     f05_ok = True
     for seed in range(10):
         img = generate_test_image(32, 32, "random", seed, 8)
-        ker = generate_test_kernel(3, "random", 8)
+        ker = generate_test_kernel(3, "random", KERNEL_W)
         f05_ok &= run_generic(f"FUNC-05-seed{seed}", img, ker, relu=(seed % 2 == 0))
     merge("FUNC-05", f05_ok)
 
     merge("FUNC-06", run_generic("FUNC-06", generate_test_image(64, 64, "random", 42, 8),
-                                  generate_test_kernel(3, "random", 8), img_w=64, img_h=64, k=3))
+                                  generate_test_kernel(3, "random", KERNEL_W), img_w=64, img_h=64, k=3))
     merge("FUNC-07", run_generic("FUNC-07", generate_test_image(32, 32, "random", 43, 8),
-                                  generate_test_kernel(5, "random", 8), img_w=32, img_h=32, k=5))
+                                  generate_test_kernel(5, "random", KERNEL_W), img_w=32, img_h=32, k=5))
 
     merge("BND-01", run_generic("BND-01", generate_test_image(32, 32, "random", 100, 8),
-                                 generate_test_kernel(3, "random", 8)))
+                                 generate_test_kernel(3, "random", KERNEL_W)))
     merge("BND-02", run_generic("BND-02", generate_test_image(64, 64, "random", 101, 8),
-                                 generate_test_kernel(3, "random", 8), img_w=64, img_h=64, k=3))
+                                 generate_test_kernel(3, "random", KERNEL_W), img_w=64, img_h=64, k=3))
     merge("BND-03", run_generic("BND-03", generate_test_image(32, 32, "zeros", 0, 8),
-                                 generate_test_kernel(3, "random", 8)))
+                                 generate_test_kernel(3, "random", KERNEL_W)))
     merge("BND-04", run_generic("BND-04", generate_test_image(32, 32, "max", 0, 8),
-                                 generate_test_kernel(3, "random", 8)))
+                                 generate_test_kernel(3, "random", KERNEL_W)))
     merge("BND-05", run_generic("BND-05", generate_test_image(32, 32, "checkerboard", 0, 8), k_edge))
     merge("BND-06", run_generic("BND-06", generate_test_image(32, 32, "random", 102, 8),
                                  np.zeros((3, 3), dtype=np.int64)))
     merge("BND-09", run_generic("BND-09", np.full((32, 32), 77, dtype=np.int64), k_edge, relu=True))
     img_ca = np.zeros((32, 32), dtype=np.int64); img_ca[0, 0] = 200
     img_cb = np.zeros((32, 32), dtype=np.int64); img_cb[31, 31] = 200
-    k_box = generate_test_kernel(3, "box_blur", 8)
+    k_box = generate_test_kernel(3, "box_blur", KERNEL_W)
     merge("BND-10", run_generic("BND-10a", img_ca, k_box) and run_generic("BND-10b", img_cb, k_box))
 
     # --- multi-phase scenario rows: generate stimulus, run the scenario
@@ -296,24 +305,24 @@ def stage_golden_comparisons():
     def gen(seed, h=8, w=8, kind="random"):
         return generate_test_image(w, h, kind, seed, 8)
 
-    img_rl = gen(500); kA = generate_test_kernel(3, "identity"); kB = generate_test_kernel(3, "random")
+    img_rl = gen(500); kA = generate_test_kernel(3, "identity"); kB = generate_test_kernel(3, "random", KERNEL_W)
     write_mem(img_rl, MEM / "reload_image.mem", 8, False)
-    write_mem(kA, MEM / "reload_kernelA.mem", 8, True)
-    write_mem(kB, MEM / "reload_kernelB.mem", 8, True)
+    write_mem(kA, MEM / "reload_kernelA.mem", KERNEL_W, True)
+    write_mem(kB, MEM / "reload_kernelB.mem", KERNEL_W, True)
 
     img1, img2 = gen(501), gen(502)
     kx = generate_test_kernel(3, "sharpen")
     write_mem(img1, MEM / "rst04_image1.mem", 8, False)
     write_mem(img2, MEM / "rst04_image2.mem", 8, False)
-    write_mem(kx, MEM / "rst04_kernel.mem", 8, True)
+    write_mem(kx, MEM / "rst04_kernel.mem", KERNEL_W, True)
 
     img_b, k_b = gen(503), generate_test_kernel(3, "edge")
     write_mem(img_b, MEM / "b2b04_image.mem", 8, False)
-    write_mem(k_b, MEM / "b2b04_kernel.mem", 8, True)
+    write_mem(k_b, MEM / "b2b04_kernel.mem", KERNEL_W, True)
 
     img_t, k_t = gen(504), generate_test_kernel(3, "edge")
     write_mem(img_t, MEM / "tim02_image.mem", 8, False)
-    write_mem(k_t, MEM / "tim02_kernel.mem", 8, True)
+    write_mem(k_t, MEM / "tim02_kernel.mem", KERNEL_W, True)
 
     for name, sources in [
         ("tb_reload_switch", [SCRIPT_DIR / "tb_reload_switch.v"] + RTL_CORE),
@@ -347,7 +356,7 @@ def stage_golden_comparisons():
     # RST-03's clean-run frame (Out_Rd_En=1, post reset, produced by tb_backpressure
     # in stage 2 using mem/bp_image.mem + mem/bp_kernel.mem written in stage 2)
     bp_img = read_mem(MEM / "bp_image.mem", (8, 8), 8, False)
-    bp_ker = read_mem(MEM / "bp_kernel.mem", (3, 3), 8, True)
+    bp_ker = read_mem(MEM / "bp_kernel.mem", (3, 3), KERNEL_W, True)
     merge("RST-03", compare_frame("RST-03 post-reset clean run", SIM / "bp_clean_run.mem", bp_img, bp_ker))
 
 

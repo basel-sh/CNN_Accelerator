@@ -24,7 +24,7 @@ import numpy as np
 
 from image_loader import read_mem_file
 
-Img_Size, K, Acc_W = 32, 3, 20
+Img_Size, K, Acc_W = 32, 3, 16
 Out_Size = Img_Size - K + 1  # 30
 
 Out = read_mem_file("sim/rtl_output.mem", (Out_Size, Out_Size), Acc_W, Signed=True)

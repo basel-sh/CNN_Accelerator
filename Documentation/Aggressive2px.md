@@ -307,3 +307,11 @@ LUT (1411) is the highest of any timing-closed configuration in this project —
 direct cost of doing all 18 products in fabric with zero DSPs. If FoM needs to go higher
 than 1.10e-2, that LUT count is the next thing to attack (trim `Prod_W`/`Acc_W`, or look
 for sharing between the Left/Right adder trees), not the clock or the DSP count.
+
+**Update (2026-09-13/14):** that `Prod_W`/`Acc_W` trim is exactly what happened next,
+once the 2026-09-12 verification audit (see `Documentation/VerificationResults.md`) had
+first added the output FIFO and generalized the MAC reduction. `Kernel_W`/`Acc_W` were
+narrowed from the fully-general 8-bit/20-bit case to 4-bit/16-bit, scoped to this design's
+verified kernel class — re-verified bit-exact before resynthesizing. Final routed result:
+LUT 896, FoM **1.777e-2**, the best of every phase in this project. Full derivation:
+`Documentation/PerformanceResults.md`.

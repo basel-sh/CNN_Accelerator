@@ -25,7 +25,7 @@ import numpy as np
 
 from image_loader import load_image, write_mem_file
 
-Pixel_W, Kernel_W, Img_Size = 8, 8, 32
+Pixel_W, Kernel_W, Img_Size = 8, 4, 32
 
 Quant_Img = load_image("Images/input.png", Size=(Img_Size, Img_Size), Pixel_Width=Pixel_W)
 write_mem_file(Quant_Img, "Images/input_32x32.mem", Pixel_W, Signed=False)

@@ -41,4 +41,4 @@ save_wave_config $wcfg_path
 close_sim
 cd $repo_root
 puts "run_simulation_2px.tcl: simulation complete."
-puts "Next: python Python/verify.py --image Images/input_32x32.mem --kernel Images/kernels/edge_3x3.mem --rtl-output sim/rtl_output.mem --img-size 32 32 --k 3 --acc-width 20"
+puts "Next: python Python/verify.py"

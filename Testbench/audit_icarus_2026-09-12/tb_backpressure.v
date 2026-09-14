@@ -5,7 +5,7 @@
 //==============================================================================
 `timescale 1ns/1ps
 module tb_backpressure;
-    localparam Pixel_W=8, Kernel_W=8, Acc_W=20, Img_W=8, Img_H=8, K=3, Addrw=6, Kidxw=4;
+    localparam Pixel_W=8, Kernel_W=4, Acc_W=16, Img_W=8, Img_H=8, K=3, Addrw=6, Kidxw=4;
     localparam Total_Pix=Img_W*Img_H, Num_K=K*K;
     localparam Expected_Outputs=(Img_W-K+1)*(Img_H-K+1);
 
@@ -163,7 +163,7 @@ module tb_backpressure;
             @(negedge Clk);
             check(Busy == 1'b1, "ERR-05: scan is active (Busy=1) before the mid-scan write");
             Img_We = 1; Img_Waddr = 3; Img_Wdata = 8'hCC;
-            Kernel_We = 1; Kernel_Windex = 2; Kernel_Wdata = 8'sd5;
+            Kernel_We = 1; Kernel_Windex = 2; Kernel_Wdata = 4'sd5;
             @(posedge Clk); @(negedge Clk);
             Img_We = 0; Kernel_We = 0;
             while (!Scan_Done) begin

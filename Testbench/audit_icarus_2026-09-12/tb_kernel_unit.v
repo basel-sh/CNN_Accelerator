@@ -4,7 +4,7 @@
 //==============================================================================
 `timescale 1ns/1ps
 module tb_kernel_unit;
-    localparam K=3, Kernel_W=8, Idxw=4;
+    localparam K=3, Kernel_W=4, Idxw=4;
     localparam N=K*K;
 
     reg Clk=0, Rst_N=1, We=0;
@@ -35,24 +35,25 @@ module tb_kernel_unit;
     initial begin
         Rst_N = 0; repeat(3) @(posedge Clk); @(negedge Clk); Rst_N = 1;
 
-        // BND-11: program only Windex=8 (K*K-1, last legal slot)
+        // BND-11: program only Windex=8 (K*K-1, last legal slot). Value must
+        // fit the real signed 4-bit coefficient range (-8..7).
         @(negedge Clk);
-        We = 1; Windex = 8; Wdata = 8'sd77;
+        We = 1; Windex = 8; Wdata = 4'sd5;
         @(negedge Clk);
         We = 0;
-        check(coeff_at(8) == 8'sd77, "BND-11: coefficient 8 (Windex==max) updates to the written value");
+        check(coeff_at(8) == 4'sd5, "BND-11: coefficient 8 (Windex==max) updates to the written value");
         all_others_zero = 1;
         for (i=0;i<8;i=i+1) if (coeff_at(i) != 0) all_others_zero = 0;
         check(all_others_zero == 1, "BND-11: coefficients 0-7 retain reset value 0, unaffected by the Windex=8 write");
 
         // ERR-02: Windex driven out of the valid 0..8 range for K=3 (Windex=15, 4'hF)
         @(negedge Clk);
-        We = 1; Windex = 4'hF; Wdata = 8'sd99;
+        We = 1; Windex = 4'hF; Wdata = -4'sd6;
         @(negedge Clk);
         We = 0;
         all_others_zero = 1;
         for (i=0;i<9;i=i+1) if (i!=8 && coeff_at(i) != 0) all_others_zero = 0;
-        check(coeff_at(8) == 8'sd77, "ERR-02: out-of-range Windex=15 write does not corrupt coefficient 8's prior value");
+        check(coeff_at(8) == 4'sd5, "ERR-02: out-of-range Windex=15 write does not corrupt coefficient 8's prior value");
         check(all_others_zero == 1, "ERR-02: out-of-range Windex=15 write does not corrupt any in-range coefficient (no crash/X)");
 
         // RST-05: reset clears the programmed kernel

@@ -3,14 +3,16 @@
 ## What's verified
 
 - **Golden model:** `convolution.py`, `golden_model.py`, `image_loader.py`,
-  `image_generator.py`, `utilities.py` — unsigned pixel / signed 8-bit kernel /
-  signed 20-bit accumulator, valid convolution, stride 1, optional ReLU.
+  `image_generator.py`, `utilities.py` — unsigned pixel / signed kernel
+  (4 bits used) / signed 16-bit accumulator, valid convolution, stride 1,
+  optional ReLU.
 - **RTL:** `kernel_memory.v`, `image_memory_2px.v`, `line_buffer_2px.v`,
-  `window_generator_2px.v`, `mac_pair.v`, `controller_2px.v`, `top_2px.v`.
+  `window_generator_2px.v`, `mac_pair.v`, `controller_2px.v`, `fifo_pair.v`,
+  `top_2px.v`, `axi_lite_top_2px.v`.
 - **System-level (`tb_top_2px.v`, Vivado XSim, 32x32 image, 3x3 kernel):**
   the vertical-Sobel demo kernel (`edge_3x3.mem`), ReLU off —
-  **900/900 outputs bit-exact** vs. the Python golden model. This is the
-  result recorded in `Documentation/Aggressive2px.md` and used for every
+  **900/900 outputs bit-exact** vs. the Python golden model, re-confirmed
+  against the final `Kernel_W=4`/`Acc_W=16` build and used for every
   synthesis run in `Reports/`.
 - **Alternate input photo**, same vertical-Sobel kernel — regenerated
   `Images/input_32x32.mem` via `Python/prepare_stimulus.py` from a different
@@ -20,17 +22,40 @@
   by editing the coefficient array in `Python/prepare_stimulus.py` and
   re-running it — **900/900 outputs bit-exact**. See "Bugs found" below for
   a mistake caught during this run.
+- **10 random-seed sweep** (`generic_tests.py`, Icarus, seeds 0-9): random
+  32x32 images x random signed 3x3 kernels, ReLU alternated — **0 mismatches
+  across all 900-output seeds**.
+- **Kernel-size and image-size generalization** (`tb_generic.v`, Icarus):
+  re-elaborated with `Img_W=Img_H=64` (3844/3844 valid outputs) and separately
+  with `K=5` — the `K=5` run is what caught the hardcoded-adder-tree bug
+  listed under "Bugs found" below.
+- **AXI4-Lite bus interface** (`tb_axi_lite.v`, Icarus, against the
+  2026-09-12 `axi_lite_top_2px.v`): kernel-write pulse timing (TIM-08),
+  undecoded-address writes/reads returning OKAY with no side effect (ERR-06),
+  an `OUT_DATA` read while empty still completing with no hang (ERR-07), and
+  `OUT_DATA` readback matching `Out_Data0` sign-extended to 32 bits against a
+  real computed result (TIM-09) — all passing.
+- **Backpressure, reset, and error handling** (`tb_backpressure.v`, Icarus):
+  an idle consumer no longer silently drops results — the 16-deep
+  `fifo_pair.v` queues them and asserts `Out_Full` once genuinely full
+  (ERR-03/ERR-04/TIM-06); a reset with unread results still queued clears the
+  FIFO cleanly with no stale `Out_Valid` (RST-03); a mid-scan `Img_We`/
+  `Kernel_We` write causes no X-propagation and the scan still completes
+  (ERR-05, documented as having no interlock by design).
 
-`Python/verify.py` performs the automated comparison and exits 0 (PASS) /
-1 (FAIL), suitable for CI.
+All of the above beyond the original golden-model comparison is captured
+formally, row by row, in `Verification_Test_Plan.xlsx` (46 test IDs) and
+re-run end to end via `python Testbench/audit_icarus_2026-09-12/run_all.py`.
+`Python/verify.py` performs the automated golden-model comparison and exits 0
+(PASS) / 1 (FAIL), suitable for CI.
 
 ## What's NOT yet verified for the current design
 
-- **ReLU on.** `tb_top_2px.v` supports it via `-testplusarg RELU=1`, but it's
-  never actually been run that way in Vivado. Exact commands are in the root
-  `README.md` command reference; phase 15 of
-  `Documentation/DevelopmentRoadmap.md` tracks doing this before the report
-  is finalized.
+- **ReLU on, in Vivado specifically.** `tb_top_2px.v` supports it via
+  `-testplusarg RELU=1`, and the Icarus suite's `tb_generic.v` exercises the
+  RTL's `RELU` parameter directly, but the dedicated Vivado XSim run with
+  `RELU=1` hasn't been done yet. Exact commands are in the root `README.md`
+  command reference (§4).
 
 The kernel and image are both single fixed-name files
 (`Images/kernels/edge_3x3.mem`, `Images/input_32x32.mem`) that

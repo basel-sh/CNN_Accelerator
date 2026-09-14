@@ -13,11 +13,13 @@ and `Documentation/Aggressive2px.md`.
 |---|---|---|---|
 | `top_2px.v` | Single entry point the FPGA (and testbench) instantiates | Wire together every submodule into the complete accelerator, apply ReLU | all RTL modules below, `Testbench/tb_top_2px.v`, `Vivado_2px/constraints_2px.xdc` |
 | `controller_2px.v` | Convolution needs a sequencer; without one, memories/datapath don't know when to act | FSM for kernel load, image streaming (2 px/cycle addressing), pair-valid handshake | `top_2px.v`, `image_memory_2px.v`, `line_buffer_2px.v`, `window_generator_2px.v` |
-| `mac_pair.v` | The actual convolution arithmetic, sized for 2 outputs/cycle with zero DSPs | 18 fabric multiplies (2x9), registered products, balanced adder tree per lane | `window_generator_2px.v`, `kernel_memory.v`, `top_2px.v` |
+| `mac_pair.v` | The actual convolution arithmetic, sized for 2 outputs/cycle with zero DSPs | 18 fabric multiplies (2x9), registered products, balanced adder tree per lane (generalized 2026-09-12 to scale with `K`) | `window_generator_2px.v`, `kernel_memory.v`, `top_2px.v` |
 | `line_buffer_2px.v` | Sliding-window convolution over a streamed image needs row history without re-fetching memory, doubled for two pixel lanes | Store K-1 previous rows for both lanes | `image_memory_2px.v`, `window_generator_2px.v` |
 | `window_generator_2px.v` | Bridges streamed pixel pairs + line buffer taps into the two overlapping KxK windows `mac_pair.v` needs | Assemble/shift two KxK windows at stride 1, one column apart | `line_buffer_2px.v`, `mac_pair.v`, `controller_2px.v` |
-| `kernel_memory.v` | Kernel must be programmable, not hard-coded, per competition spec | Store/serve signed 8-bit KxK coefficients, support reload | `top_2px.v`, `controller_2px.v`, `mac_pair.v` |
+| `kernel_memory.v` | Kernel must be programmable, not hard-coded, per competition spec | Store/serve signed KxK coefficients (4 bits used, scoped to this design's kernel class), support reload | `top_2px.v`, `controller_2px.v`, `mac_pair.v` |
 | `image_memory_2px.v` | Input image (>=32x32) must be staged and streamed two pixels/cycle | Store the frame in one dual-read-port Block RAM | `top_2px.v`, `controller_2px.v`, `line_buffer_2px.v` |
+| `fifo_pair.v` | Added 2026-09-12 to fix a genuine data-loss bug: an idle consumer used to make results vanish silently | 16-deep, dual-lane, first-word-fall-through output queue; asserts `Out_Full` instead of dropping writes once full | `mac_pair.v`'s ReLU mux, `top_2px.v` |
+| `axi_lite_top_2px.v` | Bonus requirement / real-board usability: bus-based hosts need register-mapped control, not raw signal ports | AXI4-Lite slave wrapping `top_2px.v` — `CONTROL`, `IMG_WADDR`/`WDATA`, `KERNEL_WINDEX`/`WDATA`, `OUT_DATA` registers | `top_2px.v`, `Testbench/audit_icarus_2026-09-12/tb_axi_lite.v` |
 
 Everything else that used to live in `RTL/` — `top.v`, `mac.v`, `controller.v`,
 `image_memory.v`, `line_buffer.v`, `window_generator.v`, `output_buffer.v`,
@@ -32,6 +34,7 @@ in `Documentation/OptimizationLog.md` and `Documentation/Aggressive2px.md`.
 | File | Why it exists | Responsibility | Interacts with |
 |---|---|---|---|
 | `tb_top_2px.v` | End-to-end correctness can only be proven at the system level | Drive `top_2px.v` with golden-model stimulus, dump both result lanes in raster order, optional `-testplusarg RELU=1` | `RTL/top_2px.v`, `Python/verify.py`, `Images/` |
+| `audit_icarus_2026-09-12/` | The 2026-09-12 verification audit needed a fast, license-free (Icarus, not Vivado) way to re-check every module, old and new, before resynthesizing | 10 testbenches (unit + system + AXI4-Lite + backpressure/reset/error) plus `run_all.py`, a single runner that drives all of them and prints a pass/fail summary | Every RTL module, `Verification_Test_Plan.xlsx` (each testbench's checks map to specific test IDs there) |
 
 The old `tb_top.v`, `tb_controller.v`, `tb_mac.v` (unit tests for the removed
 baseline modules) and the `Testbench/sv/` UVM-style environment (built around
@@ -65,6 +68,7 @@ ever reads, rather than adding a second kernel file.
 | `input_32x32.mem` / `input_32x32_preview.png` | RTL and Python must consume/produce byte-identical stimulus | `$readmemh` hex export + human-viewable preview of `input.png` |
 | `rtl_output_preview.png` | Visual sanity check alongside the numeric PASS/FAIL | RTL output rendered as an image |
 | `kernels/` | Kernel is programmable — multiple kernels must be tested | Holds the one `edge_3x3.mem` coefficient file the testbench reads; a different kernel means overwriting its contents via `prepare_stimulus.py`, not adding a second file |
+| `diagrams/` | The README and report need real, reusable pictures of the architecture and results, not just prose | Architecture (input path, output path, bit-width), FoM-progress, and real-simulation-output images used in the root `README.md` |
 
 ## Reports/
 
@@ -89,10 +93,10 @@ functional one: this is the only Vivado project in the repo.
 
 | File | Why it exists | Responsibility |
 |---|---|---|
-| `Architecture.md` | Design decisions must be written down | High-level architecture, dataflow, FSM, memory hierarchy of the current design |
+| `Architecture.md` | Design decisions must be written down | High-level architecture, dataflow, FSM, memory hierarchy of the current design, including `fifo_pair.v`/`axi_lite_top_2px.v` |
 | `DevelopmentRoadmap.md` | An explicit, ordered project plan | Phase-by-phase goals and file ownership |
 | `CompetitionRequirements.md` | Every scored requirement must be traceable to a design element | Requirement-to-file mapping |
-| `PerformanceResults.md` | The FoM and its inputs must be computed and justified once, correctly | Fmax, FoM, precision justification |
+| `PerformanceResults.md` | The FoM and its inputs must be computed and justified once, correctly | Fmax, FoM, precision justification, full design-history table |
 | `VerificationResults.md` | Correctness claims need evidence, not just "it passed" | Testbench results, bugs found and fixed |
 | `OptimizationLog.md` | How the baseline went from unusable to competitive is worth keeping | 1px-baseline optimization history (baseline itself now removed) |
 | `Aggressive2px.md` | How the final 2px design was chosen over the DSP-sharing alternative is worth keeping | 2px design-space exploration, including the abandoned 4-DSP attempt |
@@ -123,3 +127,5 @@ they targeted.
 | `README.md` | First thing anyone (teammate, judge) reads | Overview, setup, build/sim/verify/synth flow, command reference |
 | `requirements.txt` | Python environment must be reproducible | Pinned dependency versions |
 | `LICENSE` | Public GitHub repos should state usage terms | Project license |
+| `Verification_Test_Plan.xlsx` | A formal, row-by-row test plan is more auditable than prose alone | 46 test IDs (stimulus, expected result, coverage goal, priority, status, audit notes), independently re-run via Icarus Verilog 2026-09-12 |
+| `Final_Report_SiliconMinds.docx` / `.pdf` | The actual competition deliverable | Full write-up: architecture, verification, results, FoM, team/repo info |

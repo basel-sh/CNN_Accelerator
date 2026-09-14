@@ -6,7 +6,7 @@
 //==============================================================================
 `timescale 1ns/1ps
 module tb_axi_lite;
-    localparam Pixel_W=8, Kernel_W=8, Acc_W=20, Img_W=8, Img_H=8, K=3, Addrw=6, Kidxw=4;
+    localparam Pixel_W=8, Kernel_W=4, Acc_W=16, Img_W=8, Img_H=8, K=3, Addrw=6, Kidxw=4;
     localparam Total_Pix=Img_W*Img_H, Num_K=K*K;
 
     reg Clk=0, Rst_N=0;
